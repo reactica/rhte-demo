@@ -12,7 +12,8 @@
 
 
   <modules>
-
+    <module>amqp-verticle</module>
+    <module>amqp-verticle-example</module>
   </modules>
 
 
