@@ -1,0 +1,23 @@
+{
+  "author": "Red Hat",
+  "name": "reactica-demo",
+  "repository": "reactica/rhte-demo",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "description": "Red Hat Coderland Reactica Demo",
+  "homepage": "https://github.com/reactica",
+  "dependencies": {
+    "vertx3-eventbus-client": "3.4.2",
+    "jquery": "3.3.1",
+    "sockjs-client": "1.1.5",
+    "bootstrap": "3.3.7",
+    "datatables.net": "1.10.19",
+    "datatables.net-bs": "1.10.19",
+    "moment": "2.22.2"
+  },
+  "engines": {
+    "node": ">=0.10.10"
+  },
+  "scripts": {}
+}
