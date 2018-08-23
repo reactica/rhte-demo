@@ -97,7 +97,6 @@ hs_err_pid*
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
-.idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/dictionaries
 .idea/**/shelf
@@ -162,3 +161,16 @@ buildNumber.properties
 # Vert.x
 .vertx
 
+.DS_Store
+*.classpath
+*.project
+*.settings
+.security/
+generated/
+*.iml
+.idea
+workspace
+data
+logs/
+.vscode/
+node_modules

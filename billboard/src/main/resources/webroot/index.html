@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Coderland: Reactica!</title>
+    <link rel="icon" href="imgs/favicon.ico">
+
+</head>
+<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css"/>
+<link href="css/reactica.css" rel="stylesheet">
+<body>
+
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script src="node_modules/moment/moment.js"></script>
+<script src="node_modules/sockjs-client/dist/sockjs.min.js"></script>
+<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="node_modules/vertx3-eventbus-client/vertx-eventbus.js"></script>
+
+
+<div class="site-wrapper">
+    <div class="site-wrapper-inner">
+        <div class="cover-container container-fluid">
+            <!-- header -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="masthead clearfix">
+                        <div class="inner">
+                            <img id="coderland_logo" style="float: right" src="imgs/logo.jpg"/>
+
+                            <h1 class="masthead-brand">Coderland Reactica</h1>
+                            <nav>
+                                <ul class="nav masthead-nav">
+                                    <li class="active"><a href="#">Ride Status</a></li>
+                                    <li><a onclick="controlTest()" href="#">Ride Admin</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- main body -->
+            <div class="inner cover">
+
+                <div class="container-fluid">
+                    <!-- jumbotron wait time -->
+                    <div class="row">
+                        <div class="jumbotron">
+                            <p class="lead">Expected Wait Time</p>
+                            <span id="waittime">21 minutes</span>
+                            <label>Average Ride Time:&nbsp;</label><span id="ridetime">2.3 minutes</span>
+
+                        </div>
+                    </div>
+
+                    <!-- enter queue form -->
+                    <div class="queue row">
+                        <div class="col-md-12">
+                            <form class="form-inline">
+                                <div class="form-group">
+                                    <label for="name">Name</label>
+                                    <input type="text" class="form-control" id="name" placeholder="Jane Doe">
+                                </div>
+                                <button type="submit" class="btn btn-default">Enter</button>
+                            </form>
+                        </div>
+
+
+                    </div>
+
+                    <!-- queue -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+
+                                <table style="width: 100%;" id="queuetable" class="table table-striped table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Time in Queue</th>
+                                        <th>State</th>
+                                        <th>Time Left</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>Dummy</td>
+                                        <td>15 minutes</td>
+                                        <td>IN_QUEUE</td>
+                                        <td>10 minutes</td>
+                                    </tr>
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="application/javascript">
+
+  // open vertx event bus
+  const eb = new EventBus('/eb/');
+  eb.onopen = function () {
+    eb.registerHandler('queue:updates', function (err, payload) {
+      // reset queue data
+      loadQueueData(payload.body);
+    });
+  };
+
+  // TODO: remove (testing)
+  function controlTest() {
+    eb.send('control', {cmd: "stop"});
+    alert("This is a test! Control command sent over event bus (check server log to see if it worked");
+  }
+
+  // insert new data into table
+  function loadQueueData(data) {
+    const table = $('#queuetable').DataTable();
+    table.clear().rows.add(data);
+    table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+      console.log(this);
+      switch (this.data().state) {
+        case 'IN_QUEUE':
+          $(this.node()).addClass('info');
+          break;
+        case 'ON_RIDE':
+          $(this.node()).addClass('warning');
+          break;
+        case 'COMPLETED_RIDE':
+          $(this.node()).addClass('success');
+          break;
+      }
+    });
+    table.rows().invalidate().order([1, 'asc']).draw();
+
+  }
+
+  // render human-friendly state string
+  function renderStateString(state, type, row, meta) {
+    switch (state) {
+      case 'IN_QUEUE':
+        return 'In Queue';
+      case 'ON_RIDE':
+        return 'On Ride';
+      case 'COMPLETED_RIDE':
+        return 'Completed Ride';
+    }
+  }
+
+  // render human-friendly timestamp
+  function renderEtaString(eta, type, row, meta) {
+    if (type === "sort" || type === "type") {
+      return eta;
+    }
+
+    switch (row.state) {
+      case 'IN_QUEUE':
+        return moment(eta).fromNow(true);
+      case 'ON_RIDE':
+        return 'N/A';
+      case 'COMPLETED_RIDE':
+        return 'N/A';
+    }
+  }
+
+  $(document).ready(function () {
+
+    // initialize datatable
+    $('#queuetable').DataTable({
+      data: [],
+      lengthChange: false,
+      ordering: true,
+      order: [[1, 'asc']],
+      columns: [
+        {data: 'name'},
+        {
+          data: 'entered',
+          render: function (data, type, row, meta) {
+            if (type === "sort" || type === "type") {
+              return data;
+            }
+            return moment(data).fromNow();
+          }
+        },
+        {
+          data: 'state',
+          render: renderStateString
+        },
+        {
+          data: 'eta',
+          render: renderEtaString
+        }
+      ],
+
+    });
+
+    // make initial call to fetch all queue data and load it
+    $.ajax({
+      url: "/api/queue/all"
+    }).done(function (data) {
+      loadQueueData(data);
+    });
+
+
+  });
+
+</script>
+</body>
+</html>
