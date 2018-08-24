@@ -10,7 +10,7 @@
     <version>0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>amqp-verticle-example</artifactId>
+  <artifactId>vertx-examples</artifactId>
 
   <properties>
     <vertx.verticle>example.MainVerticle</vertx.verticle>
@@ -24,6 +24,11 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>amqp-verticle</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>vertx-data-grid-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -34,6 +34,7 @@ public class MainVerticle extends AbstractVerticle {
     vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration)))
     .flatMap(x -> vertx.rxDeployVerticle(SenderVerticle.class.getName()))
     .flatMap(x -> vertx.rxDeployVerticle(ReceiverVerticle.class.getName()))
+    .flatMap(x -> vertx.rxDeployVerticle(VerticleUsingCache.class.getName()))
       .subscribe();
 
   }

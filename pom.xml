@@ -13,7 +13,8 @@
 
   <modules>
     <module>amqp-verticle</module>
-    <module>amqp-verticle-example</module>
+    <module>vertx-data-grid-client</module>
+    <module>vertx-examples</module>
   </modules>
 
 
@@ -41,6 +42,7 @@
     <vertx.version>3.5.3</vertx.version>
     <log4j2.version>2.11.1</log4j2.version>
     <rxjava.version>2.2.0</rxjava.version>
+    <ispn.version>9.2.0.Final</ispn.version>
   </properties>
 
   <scm>
