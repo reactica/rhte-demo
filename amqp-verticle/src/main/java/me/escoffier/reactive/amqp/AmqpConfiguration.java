@@ -20,44 +20,50 @@ public class AmqpConfiguration {
     return host;
   }
 
-  public void setHost(String host) {
+  public AmqpConfiguration setHost(String host) {
     this.host = host;
+    return this;
   }
 
   public int getPort() {
     return port;
   }
 
-  public void setPort(int port) {
+  public AmqpConfiguration setPort(int port) {
     this.port = port;
+    return this;
   }
 
   public String getUser() {
     return user;
   }
 
-  public void setUser(String user) {
+  public AmqpConfiguration setUser(String user) {
     this.user = user;
+    return this;
   }
 
   public String getPassword() {
     return password;
   }
 
-  public void setPassword(String password) {
+  public AmqpConfiguration setPassword(String password) {
     this.password = password;
+    return this;
   }
 
   public String getContainer() {
     return container;
   }
 
-  public void setContainer(String container) {
+  public AmqpConfiguration setContainer(String container) {
     this.container = container;
+    return this;
   }
 
-  public void setAmqpToEventBus(List<AmqpToEventBus> list) {
+  public AmqpConfiguration setAmqpToEventBus(List<AmqpToEventBus> list) {
     this.amqpToEventBus = list;
+    return this;
   }
 
   public List<AmqpToEventBus> getAmqpToEventBus() {
@@ -68,7 +74,8 @@ public class AmqpConfiguration {
     return eventBusToAmqp;
   }
 
-  public void setEventBusToAmqp(List<EventBusToAmqp> eventBusToAmqp) {
+  public AmqpConfiguration setEventBusToAmqp(List<EventBusToAmqp> eventBusToAmqp) {
     this.eventBusToAmqp = eventBusToAmqp;
+    return this;
   }
 }
