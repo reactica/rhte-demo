@@ -26,7 +26,7 @@ public class AmqpVerticle extends AbstractVerticle {
     AmqpConfiguration configuration = config().mapTo(AmqpConfiguration.class);
     ProtonClient client = ProtonClient.create(vertx.getDelegate());
     Future<ProtonConnection> future = Future.future();
-    client.connect(configuration.getHost(), configuration.getPort(), configuration.getUser(), configuration.getUser(),
+    client.connect(configuration.getHost(), configuration.getPort(), configuration.getUser(), configuration.getPassword(),
       connection -> {
         if (connection.succeeded()) {
           LOGGER.info("Connected to the AMQP broker {}", configuration.getHost());
