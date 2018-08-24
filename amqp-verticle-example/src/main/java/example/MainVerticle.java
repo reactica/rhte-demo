@@ -13,20 +13,23 @@ import java.util.Collections;
 public class MainVerticle extends AbstractVerticle {
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     AmqpToEventBus amqpToEventBus = new AmqpToEventBus();
     amqpToEventBus.setAddress("results");
-    amqpToEventBus.setQueue("reactica/responses");
+    amqpToEventBus.setQueue("ENTER_EVENT_QUEUE");
 
     EventBusToAmqp eventBusToAmqp = new EventBusToAmqp();
     eventBusToAmqp.setAddress("messages");
-    eventBusToAmqp.setQueue("reactica/responses");
+    eventBusToAmqp.setQueue("ENTER_EVENT_QUEUE");
 
-    AmqpConfiguration configuration = new AmqpConfiguration();
-    configuration.setContainer("amqp-examples");
-    configuration.setHost("reactica-broker-amq-amqp");
-    configuration.setAmqpToEventBus(Collections.singletonList(amqpToEventBus));
-    configuration.setEventBusToAmqp(Collections.singletonList(eventBusToAmqp));
+    AmqpConfiguration configuration = new AmqpConfiguration()
+      .setContainer("amqp-examples")
+      .setHost("eventstream-amq-amqp")
+      .setPort(5672)
+      .setUser("user")
+      .setPassword("user123")
+      .setAmqpToEventBus(Collections.singletonList(amqpToEventBus))
+      .setEventBusToAmqp(Collections.singletonList(eventBusToAmqp));
 
     vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration)))
     .flatMap(x -> vertx.rxDeployVerticle(SenderVerticle.class.getName()))
