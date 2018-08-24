@@ -2,6 +2,7 @@ package com.redhat.coderland.reactica;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -15,6 +16,8 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Server extends AbstractVerticle {
 
@@ -34,6 +37,13 @@ public class Server extends AbstractVerticle {
         return STATES[(int) Math.floor(Math.random() * STATES.length)];
     }
 
+    // TODO: save config elsewhere?
+    private Map<String, Object> config = new HashMap<String, Object>() {
+      {
+        put("averageRideTimeMinutes", 5);
+      }
+    };
+
     @Override
     public void start() throws Exception {
         // TODO: remove
@@ -42,6 +52,12 @@ public class Server extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         router.route().handler(BodyHandler.create());
+
+        // get the current config
+        router.get("/api/config").handler(ctx -> {
+          ctx.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+          ctx.response().end(new JsonObject(config).encode());
+        });
 
         router.get("/api/queue/all").handler(ctx -> {
             // TODO: remove (for testing only)
@@ -97,9 +113,29 @@ public class Server extends AbstractVerticle {
             eb.send("queue:updates", json);
         });
 
-        // TODO: complete receiption of start/stop messages to start/stop ride
-        eb.consumer("control", message -> {
-            log.info("Received message: " + message.body());
+        MessageConsumer<JsonObject> consumer = eb.consumer("control");
+
+      // TODO: complete reception of start/stop messages to start/stop ride
+        consumer.handler(message -> {
+          log.info("Received CONTROL message: " + message.body().toString());
+          JsonObject controlObj = message.body();
+          String cmd = controlObj.getString("cmd");
+
+          switch (cmd) {
+            case "start":
+              // TODO
+              log.info("Starting ride");
+              break;
+            case "stop":
+              log.info("Stopping ride");
+              break;
+            case "config":
+              JsonObject params = controlObj.getJsonObject("params");
+              config = params.getMap();
+              break;
+            default:
+              log.error("Unknown command: " + cmd);
+          }
         });
 
     }

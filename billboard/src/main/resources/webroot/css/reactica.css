@@ -51,6 +51,11 @@ a:hover {
 #queuetable_paginate > ul {
     float:right;
 }
+
+#table_wrapper {
+  overflow-x:hidden;
+}
+
 table {
     background-color: darkgray;
     color: black;
