@@ -38,7 +38,7 @@ if oc get dc | grep "eventstream"; then
   info "AMQ Broker already deployed"
 else
   info "Instantiating AMQ Broker eventstream"
-  oc new-app --template=amq-broker-71-basic -p APPLICATION_NAME=eventstream -p AMQ_QUEUES=ENTER_EVENT_QUEUE,RIDE_EVENT_QUEUE,QLC_QUEUE,CL_QUEUE -p AMQ_USER=user -p AMQ_PASSWORD=user123 -p AMQ_PROTOCOL=amqp
+  oc new-app --template=amq-broker-71-basic -p APPLICATION_NAME=eventstream -p AMQ_QUEUES=USER_QUEUE,ENTER_EVENT_QUEUE,RIDE_EVENT_QUEUE,QLC_QUEUE,CL_QUEUE -p AMQ_USER=user -p AMQ_PASSWORD=user123 -p AMQ_PROTOCOL=amqp
 fi
 
 waitForPodState "eventstream" "Running"

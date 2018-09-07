@@ -30,7 +30,11 @@ function minishift_start {
     minishift addon enable admin-user
     minishift addon enable anyuid
     info "Starting minishift..."
-    minishift start --openshift-version=$1
+    if (minishift version | grep -q "CDK"); then
+      minishift start --skip-registration
+    else
+      minishift start --openshift-version=$1
+    fi
   fi
 }
 
@@ -53,6 +57,7 @@ function create_project {
     info "Reusing existing project ${OS_PROJECT_NAME}"
     oc project "${OS_PROJECT_NAME}"
   fi
+  oc policy add-role-to-user edit developer -n reactive-demo
 }
 
 function deploy_descriptor {
