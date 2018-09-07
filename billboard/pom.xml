@@ -18,6 +18,7 @@
 
   <properties>
     <vertx.verticle>com.redhat.coderland.reactica.Server</vertx.verticle>
+    <node_modules.path>${project.build.directory}/classes/webroot/node_modules</node_modules.path>
   </properties>
 
   <dependencies>
@@ -56,6 +57,35 @@
         <configuration>
           <source>8</source>
           <target>8</target>
+        </configuration>
+      </plugin>
+
+      <!-- Run npm install in src/main/resources -->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>install node and npm</id>
+            <goals>
+              <goal>install-node-and-yarn</goal>
+              <goal>yarn</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <arguments>install --modules-folder=${node_modules.path}</arguments>
+              <workingDirectory>src/main/resources/webroot</workingDirectory>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <nodeVersion>v10.8.0</nodeVersion>
+          <yarnVersion>v1.9.4</yarnVersion>
+          <installDirectory>target</installDirectory>
+          <environmentVariables>
+            <NODE_PATH>${node_modules.path}</NODE_PATH>
+          </environmentVariables>
         </configuration>
       </plugin>
     </plugins>
