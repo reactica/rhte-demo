@@ -40,9 +40,7 @@ a:hover {
     color: #5cb85c;
     margin-bottom: 10px;
 }
-#ridetime {
-    color: cornflowerblue;
-}
+
 #queuetable_filter > label {
     float: right;
     padding-bottom: 10px;

@@ -1,5 +1,6 @@
 package me.escoffier.reactive.amqp;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AmqpConfiguration {
@@ -13,8 +14,8 @@ public class AmqpConfiguration {
   private String password;
 
   private String container;
-  private List<AmqpToEventBus> amqpToEventBus;
-  private List<EventBusToAmqp> eventBusToAmqp;
+  private List<AmqpToEventBus> amqpToEventBus = new ArrayList<>();
+  private List<EventBusToAmqp> eventBusToAmqp = new ArrayList<>();
 
   public String getHost() {
     return host;

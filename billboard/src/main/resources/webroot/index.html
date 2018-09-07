@@ -51,8 +51,6 @@
                         <div class="jumbotron">
                             <p class="lead">Expected Wait Time</p>
                             <span id="waittime">21 minutes</span>
-                            <label>Average Ride Time:&nbsp;</label><span id="ridetime">2.3 minutes</span>
-
                         </div>
                     </div>
 
@@ -64,7 +62,7 @@
                                     <label for="name">Name</label>
                                     <input type="text" class="form-control" id="name" placeholder="Jane Doe">
                                 </div>
-                                <button type="submit" class="btn btn-default">Enter</button>
+                                <button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-default">Enter</button>
                             </form>
                         </div>
 
@@ -106,21 +104,38 @@
 
 <script type="application/javascript">
 
+  const MS_IN_MIN = 60 * 1000;
+
   // open vertx event bus
   const eb = new EventBus('/eb/');
   eb.onopen = function () {
-    eb.registerHandler('queue:updates', function (err, payload) {
+    eb.registerHandler('queue:state', function (err, payload) {
       // reset queue data
       loadQueueData(payload.body);
     });
+    eb.registerHandler('queue:attributes', function (err, payload) {
+      // udpate wait time
+      let expected_wait_time = new Date().getTime() + payload.body.expected_wait_time;
+      $('#waittime').text(moment(expected_wait_time).toNow(true));
+    });
   };
+
+  function enterRide(name) {
+    if (!name) {
+      alert("You must enter your name!");
+      return;
+    }
+    console.log("entering ride: " + name);
+    eb.send('queue:enter', {
+      name: name
+    });
+  }
 
   // insert new data into table
   function loadQueueData(data) {
     const table = $('#queuetable').DataTable();
     table.clear().rows.add(data);
     table.rows().every(function (rowIdx, tableLoop, rowLoop) {
-      console.log(this);
       switch (this.data().state) {
         case 'IN_QUEUE':
           $(this.node()).addClass('info');
@@ -206,15 +221,6 @@
     }).done(function (data) {
       loadQueueData(data);
     });
-
-    setInterval(function() {
-
-      let time = new Date().getTime() + (Math.random() * 30 * 60 * 1000);
-      let ridetime = new Date().getTime() + (Math.random() * 30 * 60 * 1000);
-      $('#waittime').text(moment(time).toNow(true));
-      $('#ridetime').text(moment(ridetime).toNow(true))
-    }, 3000);
-
   });
 
 </script>

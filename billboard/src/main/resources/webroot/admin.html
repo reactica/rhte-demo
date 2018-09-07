@@ -55,13 +55,6 @@
                   <button onclick="sendControlMsg('stop')" type="button" class="btn btn-lg btn-danger">Stop Ride</button>
                 </div>
               </div>
-              <div style="padding: 20px;" class="form-group center-block">
-                <label style="margin-top: 0px;" class="col-sm-6 control-label h3" for="ridetime"><span style="color: green; display: none;" id="confirmCheck" class="glyphicon glyphicon-check"></span>&nbsp;Set Ride Time</label>
-                <div class="col-sm-6">
-                  <input onchange="setRideTime(this.value)" type="number" style="width: 20%" class="form-control" id="ridetime"
-                         placeholder="Average Ride Time...">
-                </div>
-              </div>
             </div>
 
           </div>
@@ -77,37 +70,12 @@
   // open vertx event bus
   const eb = new EventBus('/eb/');
 
-  const CONFIG_AVERAGE_RIDE_TIME_MINUTES = 'averageRideTimeMinutes';
-
-  let config = {};
-
-  function setRideTime(time) {
-    config[CONFIG_AVERAGE_RIDE_TIME_MINUTES] = time;
-    sendControlMsg('config', config);
-    $('#confirmCheck').css('display', 'inline-block');
-    setTimeout(function () {
-      $('#confirmCheck').css('display', 'none');
-    }, 800);
-  }
-
   function sendControlMsg(command, params) {
     eb.send('control', {
       cmd: command,
       params: params
     });
   }
-
-  $(document).ready(function () {
-    // make initial call to fetch the current config
-    $.ajax({
-      url: "/api/config"
-    }).done(function (data) {
-      if (data[CONFIG_AVERAGE_RIDE_TIME_MINUTES]) {
-        $('#ridetime').val(data[CONFIG_AVERAGE_RIDE_TIME_MINUTES]);
-      }
-    });
-
-  });
 
 </script>
 </body>

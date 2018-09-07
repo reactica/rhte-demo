@@ -5,80 +5,21 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.redhat.coderland.reactica</groupId>
+  <parent>
+    <groupId>com.redhat.coderland.reactica</groupId>
+    <artifactId>reactica-project</artifactId>
+    <version>0.1-SNAPSHOT</version>
+  </parent>
+
   <artifactId>billboard</artifactId>
-  <version>1.0</version>
   <packaging>jar</packaging>
   <name>Reactica Demo - Billboard</name>
   <description>Frontend for Coderland Reactica Demo</description>
 
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.min.version>3.3.9</maven.min.version>
-    <jdk.min.version>${maven.compiler.source}</jdk.min.version>
-
-    <fabric8.generator.from>
-      registry.access.redhat.com/redhat-openjdk-18/openjdk18-openshift:1.2
-    </fabric8.generator.from>
-    <fabric8.openshift.trimImageInContainerSpec>true</fabric8.openshift.trimImageInContainerSpec>
-    <fabric8.skip.build.pom>true</fabric8.skip.build.pom>
-    <arquillian-cube.version>1.15.3</arquillian-cube.version>
-
-    <vertx.version>3.5.3.redhat-00001</vertx.version>
-    <vertx-maven-plugin.version>1.0.17</vertx-maven-plugin.version>
-    <vertx.verticle>com.redhat.coderland.reactica.Server</vertx.verticle>
+    <vertx.verticle>com.redhat.coderland.reactica.BillboardVerticle</vertx.verticle>
+    <node_modules.path>${project.build.directory}/classes/webroot/node_modules</node_modules.path>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>io.vertx</groupId>
-        <artifactId>vertx-dependencies</artifactId>
-        <version>${vertx.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.arquillian.cube</groupId>
-        <artifactId>arquillian-cube-bom</artifactId>
-        <version>${arquillian-cube.version}</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <repositories>
-    <repository>
-      <id>redhat-early-access</id>
-      <name>Red Hat Early Access Repository</name>
-      <url>
-        https://maven.repository.redhat.com/earlyaccess/all/
-      </url>
-    </repository>
-    <repository>
-      <id>redhat-ga</id>
-      <name>Red Hat GA Repository</name>
-      <url>https://maven.repository.redhat.com/ga/</url>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>redhat-early-access</id>
-      <name>Red Hat Early Access Repository</name>
-      <url>
-        https://maven.repository.redhat.com/earlyaccess/all/
-      </url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>redhat-ga</id>
-      <name>Red Hat GA Repository</name>
-      <url>https://maven.repository.redhat.com/ga/</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <dependencies>
     <dependency>
@@ -88,49 +29,6 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web</artifactId>
-    </dependency>
-
-    <!-- Testing -->
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-web-client</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-unit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>3.11.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
-      <version>3.1.1</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.arquillian.cube</groupId>
-      <artifactId>arquillian-cube-openshift-starter</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.fabric8</groupId>
-      <artifactId>openshift-client</artifactId>
-      <version>3.2.0</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -161,6 +59,35 @@
           <target>8</target>
         </configuration>
       </plugin>
+
+      <!-- Run npm install in src/main/resources -->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>install node and npm</id>
+            <goals>
+              <goal>install-node-and-yarn</goal>
+              <goal>yarn</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <arguments>install --modules-folder=${node_modules.path}</arguments>
+              <workingDirectory>src/main/resources/webroot</workingDirectory>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <nodeVersion>v10.8.0</nodeVersion>
+          <yarnVersion>v1.9.4</yarnVersion>
+          <installDirectory>target</installDirectory>
+          <environmentVariables>
+            <NODE_PATH>${node_modules.path}</NODE_PATH>
+          </environmentVariables>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -172,6 +99,7 @@
           <plugin>
             <groupId>io.fabric8</groupId>
             <artifactId>fabric8-maven-plugin</artifactId>
+            <version>3.5.40</version>
             <executions>
               <execution>
                 <id>fmp</id>
@@ -193,31 +121,6 @@
                 </config>
               </enricher>
             </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>openshift-it</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-failsafe-plugin</artifactId>
-            <configuration>
-              <systemPropertyVariables>
-                <app.name>${project.artifactId}</app.name>
-              </systemPropertyVariables>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>integration-test</goal>
-                  <goal>verify</goal>
-                </goals>
-              </execution>
-            </executions>
           </plugin>
         </plugins>
       </build>
