@@ -12,7 +12,6 @@
   </parent>
 
   <artifactId>billboard</artifactId>
-  <version>1.0</version>
   <packaging>jar</packaging>
   <name>Reactica Demo - Billboard</name>
   <description>Frontend for Coderland Reactica Demo</description>
