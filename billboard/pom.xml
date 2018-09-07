@@ -17,7 +17,7 @@
   <description>Frontend for Coderland Reactica Demo</description>
 
   <properties>
-    <vertx.verticle>com.redhat.coderland.reactica.Server</vertx.verticle>
+    <vertx.verticle>com.redhat.coderland.reactica.BillboardVerticle</vertx.verticle>
     <node_modules.path>${project.build.directory}/classes/webroot/node_modules</node_modules.path>
   </properties>
 
