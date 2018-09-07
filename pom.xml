@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>me.escoffier.reactica</groupId>
+  <groupId>com.redhat.coderland.reactica</groupId>
   <artifactId>reactica-project</artifactId>
   <version>0.1-SNAPSHOT</version>
 
@@ -15,6 +15,8 @@
     <module>amqp-verticle</module>
     <module>vertx-data-grid-client</module>
     <module>vertx-examples</module>
+
+    <module>billboard</module>
   </modules>
 
 
@@ -202,4 +204,33 @@
       <comments>A business-friendly OSS license</comments>
     </license>
   </licenses>
+
+  <repositories>
+    <repository>
+      <id>redhat-early-access</id>
+      <name>Red Hat Early Access Repository</name>
+      <url>
+        https://maven.repository.redhat.com/earlyaccess/all/
+      </url>
+    </repository>
+    <repository>
+      <id>redhat-ga</id>
+      <name>Red Hat GA Repository</name>
+      <url>https://maven.repository.redhat.com/ga/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>redhat-early-access</id>
+      <name>Red Hat Early Access Repository</name>
+      <url>
+        https://maven.repository.redhat.com/earlyaccess/all/
+      </url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>redhat-ga</id>
+      <name>Red Hat GA Repository</name>
+      <url>https://maven.repository.redhat.com/ga/</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>
