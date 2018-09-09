@@ -28,7 +28,7 @@ if oc get dc | grep "eventstore-dg"; then
   info "Data grid already deployed"
 else
   info "Instantiating data grid eventstore-dg"
-  oc new-app --template=datagrid72-basic -p APPLICATION_NAME=eventstore-dg -p CACHE_NAMES=userevents,rideevents
+  oc new-app --template=datagrid72-basic -p APPLICATION_NAME=eventstore-dg -p CACHE_NAMES=userevents,rideevents,users
 fi
 
 waitForPodState "eventstore-dg" "Running"
