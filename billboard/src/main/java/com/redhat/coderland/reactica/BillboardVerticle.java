@@ -1,45 +1,127 @@
 package com.redhat.coderland.reactica;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.http.HttpHeaders;
+import io.reactivex.Completable;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.bridge.PermittedOptions;
-import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
-import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import io.vertx.reactivex.CompletableHelper;
+import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.reactivex.core.eventbus.MessageConsumer;
+import io.vertx.reactivex.ext.web.Router;
+import io.vertx.reactivex.ext.web.handler.BodyHandler;
+import io.vertx.reactivex.ext.web.handler.StaticHandler;
+import io.vertx.reactivex.ext.web.handler.sockjs.SockJSHandler;
+import me.escoffier.reactive.amqp.AmqpConfiguration;
+import me.escoffier.reactive.amqp.AmqpToEventBus;
+import me.escoffier.reactive.amqp.AmqpVerticle;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class BillboardVerticle extends AbstractVerticle {
 
   private static final int MS_PER_MIN = 60 * 1000;
+  private static final Logger LOGGER = LogManager.getLogger(BillboardVerticle.class.getName());
 
-  // TODO: remove (for testing only)
-  private static String[] NAMES = new String[]{"James", "Rodney", "Thomas", "Clement", "Dan", "Sameer"};
-  private static String[] STATES = new String[]{"IN_QUEUE", "ON_RIDE", "COMPLETED_RIDE"};
-
-  private Logger log = LoggerFactory.getLogger(BillboardVerticle.class.getName());
+  private List<JsonObject> queue = new ArrayList<>();
 
   @Override
-  public void start() {
-    // TODO: remove (for test purposes only)
-    System.setProperty("vertx.disableFileCaching", "true");
+  public void start(Future<Void> done) {
+    // TODO use real ETA computation
+    vertx.setPeriodic(5000, t -> {
+      long estimatedWaitingTime = queue.stream().filter(j -> j.getString("state").equalsIgnoreCase("IN_QUEUE")).count() / 10 * MS_PER_MIN;
+      JsonObject queue_attributes = new JsonObject().put("expected_wait_time", estimatedWaitingTime);
+      vertx.eventBus().send("queue:attributes", queue_attributes);
+    });
 
+    listenForUserEvents()
+      .andThen(deployAMQPVerticle())
+      .andThen(setupWebApp())
+      .doOnComplete(() -> LOGGER.info("Initialization done"))
+      .subscribe(CompletableHelper.toObserver(done));
+  }
+
+  private void updateQueues(String user, long enteredAt, String state) {
+    // TODO Replace with real computation
+    long eta = System.currentTimeMillis() + queue.stream().filter(j -> j.getString("state").equalsIgnoreCase("IN_QUEUE")).count() / 10 * MS_PER_MIN;
+
+    if (state.equalsIgnoreCase("IN_QUEUE")) {
+      queue.add(new JsonObject().put("name", user)
+        .put("entered", enteredAt - Math.round(Math.random() * 10 * MS_PER_MIN))
+        .put("state", "IN_QUEUE")
+        .put("eta", eta));
+      LOGGER.info("User {} entered the queue - waiting queue: {} (ETA: {})", user,
+        queue.stream().filter(j -> j.getString("state").equalsIgnoreCase("IN_QUEUE")).map(j -> j.getString("name")).collect(Collectors.toList()), eta);
+    } else if (state.equalsIgnoreCase("ON_RIDE")) {
+      // Remove used from queue
+      Optional<JsonObject> any = queue.stream().filter(json -> json.getString("name").equalsIgnoreCase(user)).findAny();
+      if (any.isPresent()) {
+       any.get().put("state", "ON_RIDE");
+      } else {
+        queue.add(new JsonObject().put("name", user).put("entered", enteredAt - Math.round(Math.random() * 10 * MS_PER_MIN))
+          .put("state", "ON_RIDE").put("eta", eta));
+      }
+      LOGGER.info("User {} on ride", user);
+    } else if (state.equalsIgnoreCase("COMPLETED_RIDE")) {
+      LOGGER.info("User {} leaving the ride", user);
+      queue.stream().filter(json -> json.getString("name").equalsIgnoreCase(user)).findAny()
+        .ifPresent(entries -> entries.put("state", "COMPLETED_RIDE"));
+    }
+    // Send new queue to UI
+    vertx.eventBus().send("queue:state", getQueue());
+  }
+
+  private JsonArray getQueue() {
+    JsonArray result = new JsonArray();
+    for (JsonObject json : queue) {
+      result.add(json);
+    }
+    return result;
+  }
+
+  private Completable deployAMQPVerticle() {
+    AmqpToEventBus enter_queue = new AmqpToEventBus();
+    enter_queue.setAddress("user-in-queue");
+    enter_queue.setQueue("ENTER_EVENT_QUEUE");
+
+    AmqpConfiguration configuration = new AmqpConfiguration()
+      .setContainer("amqp-examples")
+      .setHost("eventstream-amq-amqp")
+      .setPort(5672)
+      .setUser("user")
+      .setPassword("user123")
+      .addAmqpToEventBus(enter_queue);
+
+    return vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration))).ignoreElement();
+  }
+
+  private Completable listenForUserEvents() {
+    // Listen for user added in queue.
+    MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("user-in-queue");
+    consumer
+      .handler(msg -> {
+        String user = msg.body().getString("name");
+        long enteredAt = msg.body().getLong("enter_time");
+        String state = msg.body().getString("current_state");
+        updateQueues(user, enteredAt, state);
+      });
+    return consumer.rxCompletionHandler();
+  }
+
+  private Completable setupWebApp() {
     Router router = Router.router(vertx);
-
     router.route().handler(BodyHandler.create());
 
-    router.get("/api/queue/all").handler(ctx -> {
-      // TODO: remove (for test purposes only)
-      final JsonArray json = generateRandomQueueState();
-      ctx.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+    router.get("/api/queue/in-queue").handler(ctx -> {
+      final JsonArray json = getQueue();
+      ctx.response().putHeader("Content-Type", "application/json");
       ctx.response().end(json.encode());
     });
 
@@ -52,91 +134,9 @@ public class BillboardVerticle extends AbstractVerticle {
     // Create the event bus bridge and add it to the router.
     SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
     router.route("/eb/*").handler(ebHandler);
+    router.route().handler(StaticHandler.create());
 
-    // TODO: re-enable cache (disabled for testing only)
-    router.route().handler(StaticHandler.create().setCachingEnabled(false).setMaxAgeSeconds(0));
-
-    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-
-    EventBus eb = vertx.eventBus();
-
-    // TODO: remove (for test purposes only)
-    vertx.setPeriodic(5000, t -> {
-      // send back random queue
-      final JsonArray queue_state = generateRandomQueueState();
-      eb.send("queue:state", queue_state);
-
-      // send back random expected wait time 1-5 minutes
-      final JsonObject queue_attributes = new JsonObject();
-      queue_attributes.put("expected_wait_time", MS_PER_MIN + Math.round(Math.random() * 4 * MS_PER_MIN));
-      eb.send("queue:attributes", queue_attributes);
-    });
-
-    MessageConsumer<JsonObject> control_consumer = eb.consumer("control");
-
-    // TODO: complete reception of start/stop messages to start/stop ride
-    control_consumer.handler(message -> {
-      log.info("Received CONTROL message: " + message.body().toString());
-      JsonObject controlObj = message.body();
-      String cmd = controlObj.getString("cmd");
-
-      switch (cmd) {
-        case "start":
-          // TODO
-          log.info("Starting ride");
-          break;
-        case "stop":
-          // TODO
-          log.info("Stopping ride");
-          break;
-        default:
-          log.error("Unknown command: " + cmd);
-      }
-    });
-
-    MessageConsumer<JsonObject> rider_cosumer = eb.consumer("queue:enter");
-
-    // TODO: complete reception of start/stop messages to start/stop ride
-    rider_cosumer.handler(message -> {
-      log.info("Received RIDER ENTRY message: " + message.body().toString());
-      JsonObject entry_message = message.body();
-      String rider_name = entry_message.getString("name");
-      log.info("Rider entering queue: " + rider_name);
-    });
-
-  }
-
-  // TODO: remove (for test purposes only)
-  private static String getRandomName() {
-    return NAMES[(int) Math.floor(Math.random() * NAMES.length)];
-  }
-
-  // TODO: remove (for test purposes only)
-  private static String getRandomState() {
-    return STATES[(int) Math.floor(Math.random() * STATES.length)];
-  }
-
-
-  // TODO: remove (for test purposes only)
-  private JsonArray generateRandomQueueState() {
-    final JsonArray json = new JsonArray();
-
-    // create random representation of queue state
-    int count = 5 + (int)Math.round(Math.random() * 5);
-    for (int i = 0; i < count; i++) {
-      String state = getRandomState();
-      long eta = 0L;
-      if ("IN_QUEUE".equals(state)) {
-        eta = new Date().getTime() + Math.round(Math.random() * 10 * MS_PER_MIN);
-      }
-      json.add(new JsonObject()
-        .put("name", getRandomName())
-        .put("entered", new Date().getTime() - Math.round(Math.random() * 10 * MS_PER_MIN))
-        .put("state", state)
-        .put("eta", eta)
-      );
-    }
-    return json;
+    return vertx.createHttpServer().requestHandler(router::accept).rxListen(8080).ignoreElement();
   }
 }
 
