@@ -102,12 +102,12 @@ function waitForPodReadiness {
 }
 
 function getPodState {
-  local res=`oc get pods | grep $1 | grep -v "deploy" | awk '{ print $3 }'`
+  local res=`oc get pods | grep $1 | grep -v "deploy" |  grep -v "build" | awk '{ print $3 }'`
   echo ${res}
 }
 
 function getPodReadinessState {
-  local res=`oc get pods | grep $1 | grep -v "deploy" | awk '{ print $2 }'`
+  local res=`oc get pods | grep $1 | grep -v "deploy" |  grep -v "build"  | awk '{ print $2 }'`
   echo ${res}
 }
 
