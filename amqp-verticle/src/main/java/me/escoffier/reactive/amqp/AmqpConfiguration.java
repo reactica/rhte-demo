@@ -79,4 +79,14 @@ public class AmqpConfiguration {
     this.eventBusToAmqp = eventBusToAmqp;
     return this;
   }
+
+  public AmqpConfiguration addAmqpToEventBus(AmqpToEventBus toBeAdded) {
+    this.amqpToEventBus.add(toBeAdded);
+    return this;
+  }
+
+  public AmqpConfiguration addEventBusToAmqp(EventBusToAmqp toBeAdded) {
+    this.eventBusToAmqp.add(toBeAdded);
+    return this;
+  }
 }
