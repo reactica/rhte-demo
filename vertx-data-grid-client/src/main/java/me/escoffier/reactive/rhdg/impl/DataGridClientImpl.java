@@ -2,6 +2,7 @@ package me.escoffier.reactive.rhdg.impl;
 
 import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
+import marshallers.UserMarshaller;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import me.escoffier.reactive.rhdg.DataGridClient;
 import me.escoffier.reactive.rhdg.DataGridConfiguration;
@@ -10,7 +11,11 @@ import org.apache.logging.log4j.Logger;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
+import org.infinispan.protostream.FileDescriptorSource;
+import org.infinispan.protostream.SerializationContext;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,11 +47,23 @@ public class DataGridClientImpl implements DataGridClient {
     LOGGER.info("JDG location: {}:{}", config.getHost(), config.getPort());
     cb.addServer()
       .host(config.getHost())
-      .port(config.getPort());
+      .port(config.getPort())
+      .marshaller(new ProtoStreamMarshaller());
     return vertx.<RemoteCacheManager>rxExecuteBlocking(
       future -> {
         RemoteCacheManager manager = new RemoteCacheManager(cb.build());
-        future.complete(manager);
+
+        try {
+          LOGGER.info("Registering protobuff stream marshaller for the User object....");
+          SerializationContext serCtx = ProtoStreamMarshaller.getSerializationContext(manager);
+          serCtx.registerProtoFiles(FileDescriptorSource.fromResources("/user.proto"));
+          serCtx.registerMarshaller(new UserMarshaller());
+
+          future.complete(manager);
+        } catch (IOException e) {
+          LOGGER.error("Error trying to register protobuff marshaller for the User with message " + e.getMessage());
+          future.fail(e);
+        }
       }
     ).doOnSuccess(rcm -> caches = rcm);
   }

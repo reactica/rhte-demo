@@ -40,6 +40,7 @@ public class MainVerticle extends AbstractVerticle {
     LOGGER.info("Deploying Other Verticles");
     vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration)))
       .flatMap(x -> vertx.rxDeployVerticle(UserEventReceiverVerticle.class.getName()))
+      //.flatMap(x -> vertx.rxDeployVerticle(MessageGenerator.class.getName()))
       .subscribe();
   }
 

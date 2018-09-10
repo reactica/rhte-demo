@@ -17,6 +17,7 @@
     <module>vertx-examples</module>
 
     <module>billboard</module>
+    <module>domain-model</module>
   </modules>
 
 

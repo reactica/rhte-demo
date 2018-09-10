@@ -1,5 +1,6 @@
 package com.redhat.coderland.reactica.eventstore;
 
+import com.redhat.coderland.reactica.model.User;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
@@ -21,11 +22,13 @@ public class UserEventReceiverVerticle extends AbstractVerticle {
 
     vertx.eventBus().consumer("user-events",message -> {
       LOGGER.info("RECEIVED USER EVENT: " + message.body().toString());
+
       JsonObject userEvent = JsonObject.mapFrom(message.body());
+      User user = userEvent.mapTo(User.class);
       single.flatMap(client -> client.getCache("userevents"))
         .doOnSuccess(cache -> {
-          cache.put(userEvent.getString("id"),userEvent.encode());
-          LOGGER.info("Saved user with id " + userEvent.getString("id") + " to the Data Grid");
+          cache.put(user.getId(),user);
+          LOGGER.info("Saved user with id " + user.getId() + " to the Data Grid");
         })
         .subscribe();
     });
