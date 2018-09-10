@@ -14,8 +14,8 @@
   <modules>
     <module>amqp-verticle</module>
     <module>vertx-data-grid-client</module>
-    <module>vertx-examples</module>
-
+    <module>eventstore</module>
+    <module>event-generator</module>
     <module>billboard</module>
     <module>domain-model</module>
   </modules>

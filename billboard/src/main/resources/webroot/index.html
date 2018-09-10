@@ -34,7 +34,7 @@
                             <nav>
                                 <ul class="nav masthead-nav">
                                     <li class="active"><a href="#">Ride Status</a></li>
-                                    <li><a href="/admin.html">Ride Admin</a></li>
+                                    <!--<li><a href="/admin.html">Ride Admin</a></li>-->
                                 </ul>
                             </nav>
                         </div>
@@ -50,24 +50,22 @@
                     <div class="row">
                         <div class="jumbotron">
                             <p class="lead">Expected Wait Time</p>
-                            <span id="waittime">21 minutes</span>
+                            <span id="waittime">N/A</span>
                         </div>
                     </div>
 
-                    <!-- enter queue form -->
-                    <div class="queue row">
-                        <div class="col-md-12">
-                            <form class="form-inline">
-                                <div class="form-group">
-                                    <label for="name">Name</label>
-                                    <input type="text" class="form-control" id="name" placeholder="Jane Doe">
-                                </div>
-                                <button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-default">Enter</button>
-                            </form>
-                        </div>
-
-
-                    </div>
+                    <!--&lt;!&ndash; enter queue form &ndash;&gt;-->
+                    <!--<div class="queue row">-->
+                        <!--<div class="col-md-12">-->
+                            <!--<form class="form-inline">-->
+                                <!--<div class="form-group">-->
+                                    <!--<label for="name">Name</label>-->
+                                    <!--<input type="text" class="form-control" id="name" placeholder="Jane Doe">-->
+                                <!--</div>-->
+                                <!--<button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-default">Enter</button>-->
+                            <!--</form>-->
+                        <!--</div>-->
+                    <!--</div>-->
 
                     <!-- queue -->
                     <div class="row">
@@ -120,16 +118,16 @@
     });
   };
 
-  function enterRide(name) {
-    if (!name) {
-      alert("You must enter your name!");
-      return;
-    }
-    console.log("entering ride: " + name);
-    eb.send('queue:enter', {
-      name: name
-    });
-  }
+  // function enterRide(name) {
+  //   if (!name) {
+  //     alert("You must enter your name!");
+  //     return;
+  //   }
+  //   console.log("entering ride: " + name);
+  //   eb.send('queue:enter', {
+  //     name: name
+  //   });
+  // }
 
   // insert new data into table
   function loadQueueData(data) {
@@ -217,7 +215,7 @@
     $('#queuetable_filter > label > input').attr('placeholder', 'Search...');
     // make initial call to fetch all queue data and load it
     $.ajax({
-      url: "/api/queue/all"
+      url: "/api/queue/in-queue"
     }).done(function (data) {
       loadQueueData(data);
     });
