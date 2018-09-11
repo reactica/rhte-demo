@@ -2,6 +2,7 @@ package me.escoffier.reactive.rhdg.impl;
 
 import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.buffer.Buffer;
 import marshallers.UserMarshaller;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import me.escoffier.reactive.rhdg.DataGridClient;
@@ -53,10 +54,12 @@ public class DataGridClientImpl implements DataGridClient {
       future -> {
         RemoteCacheManager manager = new RemoteCacheManager(cb.build());
 
+
         try {
           LOGGER.info("Registering protobuff stream marshaller for the User object....");
           SerializationContext serCtx = ProtoStreamMarshaller.getSerializationContext(manager);
-          serCtx.registerProtoFiles(FileDescriptorSource.fromResources("/user.proto"));
+          Buffer buffer = vertx.fileSystem().readFileBlocking("user.proto");
+          serCtx.registerProtoFiles(FileDescriptorSource.fromString("user.proto", buffer.toString()));
           serCtx.registerMarshaller(new UserMarshaller());
 
           future.complete(manager);
