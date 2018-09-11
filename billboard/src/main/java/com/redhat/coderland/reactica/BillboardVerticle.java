@@ -108,8 +108,8 @@ public class BillboardVerticle extends AbstractVerticle {
     consumer
       .handler(msg -> {
         String user = msg.body().getString("name");
-        long enteredAt = msg.body().getLong("enter_time");
-        String state = msg.body().getString("current_state");
+        long enteredAt = msg.body().getLong("enterTime");
+        String state = msg.body().getString("currentState");
         updateQueues(user, enteredAt, state);
       });
     return consumer.rxCompletionHandler();
