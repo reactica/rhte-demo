@@ -1,0 +1,9 @@
+package com.redhat.coderland.reactica.model;
+
+message User {
+  required string id = 1;
+  required string name = 2;
+  required string rideId = 3;
+  required string currentState = 4;
+  required int64 enterTime = 5;
+}

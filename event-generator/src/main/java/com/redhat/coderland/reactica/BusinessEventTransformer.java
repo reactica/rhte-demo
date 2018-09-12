@@ -39,11 +39,20 @@ public class BusinessEventTransformer extends AbstractVerticle  {
   private void onUserEvent(JsonObject event) {
     User user = User.fromJson(event.getJsonObject("user"));
 
+    Ride ride = null;
+    if (event.getJsonObject("ride") != null) {
+      ride = Ride.fromJson(event.getJsonObject("ride"));
+    }
+
     JsonObject business = new JsonObject()
-      .put("id", user.getName()) // TODO Do we need a uuid?
+      .put("id", user.getName())
       .put("name", user.getName())
-      .put("current_state", user.getState().name())
-      .put("enter_time", user.getEnteredQueueAt());
+      .put("currentState", user.getState().name())
+      .put("enterTime", user.getEnteredQueueAt());
+
+    if (ride != null) {
+      business.put("rideId", ride.getUuid());
+    }
 
     System.out.println("Forwarding event to 'to-user-queue' and 'to-enter-event-queue' " + business.encode());
     vertx.eventBus().send("to-user-queue", business);

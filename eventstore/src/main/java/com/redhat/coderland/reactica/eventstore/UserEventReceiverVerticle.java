@@ -16,21 +16,20 @@ public class UserEventReceiverVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    Single<DataGridClient> single = DataGridClient.create(vertx, new DataGridConfiguration()
+    DataGridClient.create(vertx, new DataGridConfiguration()
       .setHost("eventstore-dg-hotrod")
-      .setPort(11333));
+      .setPort(11333))
+      .subscribe(client -> {
+        vertx.eventBus().consumer("user-events", message -> {
+          LOGGER.info("RECEIVED USER EVENT: " + message.body().toString());
 
-    vertx.eventBus().consumer("user-events",message -> {
-      LOGGER.info("RECEIVED USER EVENT: " + message.body().toString());
-
-      JsonObject userEvent = JsonObject.mapFrom(message.body());
-      User user = userEvent.mapTo(User.class);
-      single.flatMap(client -> client.getCache("userevents"))
-        .doOnSuccess(cache -> {
-          cache.put(user.getId(),user);
-          LOGGER.info("Saved user with id " + user.getId() + " to the Data Grid");
-        })
-        .subscribe();
-    });
+          JsonObject userEvent = JsonObject.mapFrom(message.body());
+          User user = userEvent.mapTo(User.class);
+          client.getCache("userevents")
+            .flatMapCompletable(cache -> cache.put(user.getId(), user))
+            .doOnComplete(() -> LOGGER.info("Saved user with id " + user.getId() + " to the Data Grid"))
+          .subscribe();
+        });
+      });
   }
 }
