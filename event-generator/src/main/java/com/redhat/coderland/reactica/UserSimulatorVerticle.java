@@ -14,9 +14,11 @@ import java.util.Random;
 
 /**
  * Creates users and put them in the queue.
- * Generation pace is "random" but around 10 seconds
+ * Generation pace is "random" but around 20 seconds
  */
 public class UserSimulatorVerticle extends AbstractVerticle  {
+
+  private static final int PERIOD = 20000;
 
   private Random random = new Random();
 
@@ -50,7 +52,7 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
   }
 
   private void enqueueUserCreation() {
-    int delay = random.nextInt(10000) + ((random.nextBoolean() ? -1 : 1 ) * random.nextInt(3000));
+    int delay = random.nextInt(PERIOD) + ((random.nextBoolean() ? -1 : 1 ) * random.nextInt(3000));
     if (delay < 100) {
       // Avoid big burst
       delay = 5000;
