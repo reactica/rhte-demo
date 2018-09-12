@@ -26,19 +26,9 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-client-hotrod</artifactId>
-      <version>${ispn.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-remote-query-client</artifactId>
-      <version>${ispn.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-query-dsl</artifactId>
-      <version>${ispn.version}</version>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>vertx-data-grid-client</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
