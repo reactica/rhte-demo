@@ -8,17 +8,20 @@ import me.escoffier.reactive.rhdg.DataGridClient;
 import me.escoffier.reactive.rhdg.DataGridConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 
 public class UserEventReceiverVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger("UserEventReceiverVerticle");
 
   @Override
-  public void start() throws Exception {
+  public void start() {
 
     DataGridClient.create(vertx, new DataGridConfiguration()
       .setHost("eventstore-dg-hotrod")
-      .setPort(11333))
+      .setPort(11333)
+      .addMarshaller(new ProtoStreamMarshaller())
+      .addProtoFile("/user.proto", new UserMarshaller(), true))
       .subscribe(client -> {
         vertx.eventBus().consumer("user-events", message -> {
           LOGGER.info("RECEIVED USER EVENT: " + message.body().toString());
