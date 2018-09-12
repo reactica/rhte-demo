@@ -1,8 +1,8 @@
 package me.escoffier.reactive.rhdg.impl;
 
+import com.redhat.coderland.reactica.model.User;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
-import marshallers.UserMarshaller;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import me.escoffier.reactive.rhdg.DataGridClient;
 import me.escoffier.reactive.rhdg.DataGridConfiguration;
@@ -13,6 +13,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.FileDescriptorSource;
+import org.infinispan.protostream.MessageMarshaller;
 import org.infinispan.protostream.SerializationContext;
 
 import java.io.IOException;
@@ -57,7 +58,39 @@ public class DataGridClientImpl implements DataGridClient {
           LOGGER.info("Registering protobuff stream marshaller for the User object....");
           SerializationContext serCtx = ProtoStreamMarshaller.getSerializationContext(manager);
           serCtx.registerProtoFiles(FileDescriptorSource.fromResources("/user.proto"));
-          serCtx.registerMarshaller(new UserMarshaller());
+          serCtx.registerMarshaller(new MessageMarshaller<User>() {
+            @Override
+            public User readFrom(MessageMarshaller.ProtoStreamReader reader) throws IOException {
+              User user = new User();
+              user.setId(reader.readString("id"));
+              user.setName(reader.readString("name"));
+              user.setRideId(reader.readString("rideId"));
+              user.setCurrentState(reader.readString("currentState"));
+              user.setEnterTime(reader.readLong("enterTime"));
+
+              return user;
+            }
+
+            @Override
+            public void writeTo(MessageMarshaller.ProtoStreamWriter writer, User user) throws IOException {
+              writer.writeString("id",user.getId());
+              writer.writeString("name",user.getName());
+              writer.writeString("rideId","reactica");
+              writer.writeString("currentState",user.getCurrentState());
+              writer.writeLong("enterTime",user.getEnterTime());
+
+            }
+
+            @Override
+            public Class<? extends User> getJavaClass() {
+              return User.class;
+            }
+
+            @Override
+            public String getTypeName() {
+              return "com.redhat.coderland.reactica.model.User";
+            }
+          });
 
           future.complete(manager);
         } catch (IOException e) {
