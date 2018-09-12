@@ -1,6 +1,6 @@
 ## How to setup the demo
 
-### Install and setup OpenShift
+### Install and setup required services
 
 ```bash
 ./deploy.sh
@@ -17,3 +17,20 @@ It:
 * waits for the readiness of the datagrid and AMQ broker.
 
 The script _should be idempotent_.
+
+### Install the application
+
+```bash
+./deploy-application.sh
+```
+
+This script requires `minishift` top be available in your `$PATH` and Internet access.
+
+It:
+
+* Builds the application and its services
+* deploys the application
+* waits for the readiness of the components
+
+The script _should be idempotent_.
+
