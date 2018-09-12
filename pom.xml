@@ -18,6 +18,7 @@
     <module>event-generator</module>
     <module>billboard</module>
     <module>domain-model</module>
+    <module>current-line-updater</module>
   </modules>
 
 
