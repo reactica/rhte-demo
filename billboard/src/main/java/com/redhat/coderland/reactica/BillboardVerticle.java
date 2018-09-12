@@ -1,6 +1,7 @@
 package com.redhat.coderland.reactica;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -17,20 +18,26 @@ import io.vertx.reactivex.ext.web.handler.sockjs.SockJSHandler;
 import me.escoffier.reactive.amqp.AmqpConfiguration;
 import me.escoffier.reactive.amqp.AmqpToEventBus;
 import me.escoffier.reactive.amqp.AmqpVerticle;
+import me.escoffier.reactive.rhdg.AsyncCache;
+import me.escoffier.reactive.rhdg.DataGridClient;
+import me.escoffier.reactive.rhdg.DataGridConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class BillboardVerticle extends AbstractVerticle {
 
   private static final int MS_PER_MIN = 60 * 1000;
   private static final Logger LOGGER = LogManager.getLogger(BillboardVerticle.class.getName());
+  private Random random = new Random();
 
   private List<JsonObject> queue = new ArrayList<>();
+  private AsyncCache<String, String> cache;
 
   @Override
   public void start(Future<Void> done) {
@@ -41,7 +48,25 @@ public class BillboardVerticle extends AbstractVerticle {
       vertx.eventBus().send("queue:attributes", queue_attributes);
     });
 
+    Single<DataGridClient> single = DataGridClient.create(vertx, new DataGridConfiguration()
+      .setHost("eventstore-dg-hotrod")
+      .setPort(11333));
+
+    single.flatMap(client -> client.<String, String>getCache("users"))
+      .subscribe(
+        cache -> {
+          this.cache = cache;
+          LOGGER.info("User Cache initialized");
+          done.complete(null);
+        },
+        err -> {
+          LOGGER.error("Unable to initialize the User Cache");
+          done.fail(err);
+        }
+      );
+
     listenForClQueue()
+      .andThen(listenForUsers())
       .andThen(deployAMQPVerticle())
       .andThen(setupWebApp())
       .doOnComplete(() -> LOGGER.info("Initialization done"))
@@ -115,7 +140,7 @@ public class BillboardVerticle extends AbstractVerticle {
 
           res.add(new JsonObject()
             .put("name", user)
-            .put("entered", enteredAt - Math.round(Math.random() * 10 * MS_PER_MIN))
+            .put("entered", enteredAt)
             .put("state", state)
             .put("eta", System.currentTimeMillis()) // TODO Fix me.
           );
@@ -125,6 +150,29 @@ public class BillboardVerticle extends AbstractVerticle {
         vertx.eventBus().send("queue:state", res);
       });
     return consumer.rxCompletionHandler();
+  }
+
+  private Completable listenForUsers() {
+    MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("queue:enter");
+    consumer
+      .handler(msg -> {
+        String name = msg.body().getString("name");
+        User user = new User();
+        user.setName(name);
+        LOGGER.info("Adding user {}", user.getName());
+        addUserToQueue(user).subscribe();
+      });
+    return consumer.rxCompletionHandler();
+  }
+
+  private Completable addUserToQueue(User user) {
+    JsonObject event = new JsonObject()
+      .put("event", "user-in-queue")
+      .put("user", user.toJson());
+    return cache.put(user.getName(), user.asJson())
+      .andThen(cache.put(user.getName(), user.putInQueue().asJson())
+      .doOnComplete(() -> vertx.eventBus().send("user-events", event))
+    );
   }
 
   private Completable setupWebApp() {

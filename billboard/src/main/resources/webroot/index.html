@@ -54,25 +54,25 @@
                         </div>
                     </div>
 
-                    <!--&lt;!&ndash; enter queue form &ndash;&gt;-->
-                    <!--<div class="queue row">-->
-                        <!--<div class="col-md-12">-->
-                            <!--<form class="form-inline">-->
-                                <!--<div class="form-group">-->
-                                    <!--<label for="name">Name</label>-->
-                                    <!--<input type="text" class="form-control" id="name" placeholder="Jane Doe">-->
-                                <!--</div>-->
-                                <!--<button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-default">Enter</button>-->
-                            <!--</form>-->
-                        <!--</div>-->
-                    <!--</div>-->
+                    <!-- enter queue form -->
+                    <div class="queue row">
+                        <div class="col-md-12">
+                            <form class="form-inline">
+                                <div class="form-group">
+                                    <label for="name">Name</label>
+                                    <input type="text" class="form-control" id="name" placeholder="Jane Doe">
+                                </div>
+                                <button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-default">Enter</button>
+                            </form>
+                        </div>
+                    </div>
 
                     <!-- queue -->
                     <div class="row">
                         <div class="col-md-12">
                             <div id="table_wrapper" class="table-responsive">
 
-                                <table style="width: 100%;" id="queuetable" class="table table-striped table-bordered">
+                                <table style="width: 100%;" id="queuetable" class="table table-striped table-bordered table-condensed">
                                     <thead>
                                     <tr>
                                         <th>Name</th>
@@ -104,6 +104,8 @@
 
   const MS_IN_MIN = 60 * 1000;
 
+  let highlightedUsers = [];
+
   // open vertx event bus
   const eb = new EventBus('/eb/');
   eb.onopen = function () {
@@ -118,16 +120,18 @@
     });
   };
 
-  // function enterRide(name) {
-  //   if (!name) {
-  //     alert("You must enter your name!");
-  //     return;
-  //   }
-  //   console.log("entering ride: " + name);
-  //   eb.send('queue:enter', {
-  //     name: name
-  //   });
-  // }
+  function enterRide(name) {
+    if (!name) {
+      alert("You must enter your name!");
+      return;
+    }
+    console.log("entering ride: " + name);
+    eb.send('queue:enter', {
+      name: name
+    });
+    highlightedUsers.push(name);
+    document.getElementById('name').value = '';
+  }
 
   // insert new data into table
   function loadQueueData(data) {
@@ -146,8 +150,17 @@
           break;
       }
     });
-    table.rows().invalidate().order([1, 'asc']).draw();
+    table.rows().invalidate().order([1, 'desc']).draw();
 
+  }
+
+  // highlight users we added ourselves
+  function renderNameString(name, type, row, meta) {
+    if (highlightedUsers.includes(name)) {
+      return '<strong>' + name + '</strong>';
+    } else {
+      return name;
+    }
   }
 
   // render human-friendly state string
@@ -187,10 +200,14 @@
       },
       data: [],
       lengthChange: false,
+      pageLength: 20,
       ordering: true,
-      order: [[1, 'asc']],
+      order: [[1, 'desc']],
       columns: [
-        {data: 'name'},
+        {
+          data: 'name',
+          render: renderNameString
+        },
         {
           data: 'entered',
           render: function (data, type, row, meta) {
