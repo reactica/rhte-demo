@@ -10,7 +10,7 @@
     <version>0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>eventstore</artifactId>
+  <artifactId>event-store</artifactId>
 
   <properties>
     <vertx.verticle>com.redhat.coderland.reactica.eventstore.MainVerticle</vertx.verticle>

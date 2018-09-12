@@ -13,8 +13,11 @@ mvn clean package fabric8:deploy -Popenshift
 waitForPodState "event-generator" "Running"
 waitForPodReadiness "event-generator" 1
 
-waitForPodState "eventstore-dg" "Running"
-waitForPodReadiness "eventstore-dg" 1
+waitForPodState "event-store" "Running"
+waitForPodReadiness "event-store" 1
+
+waitForPodState "current-line-updater" "Running"
+waitForPodReadiness "current-line-updater" 1
 
 waitForPodState "billboard" "Running"
 waitForPodReadiness "billboard" 1
