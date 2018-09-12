@@ -24,6 +24,7 @@ public class User {
   public User(String id, String name) {
     this.id = id;
     this.name = name;
+    this.rideId = "reactica";
     this.currentState = "IN_QUEUE";
     this.enterTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
 
@@ -67,5 +68,16 @@ public class User {
 
   public void setEnterTime(long enterTime) {
     this.enterTime = enterTime;
+  }
+
+  @Override
+  public String toString() {
+    return "User{" +
+      "id='" + id + '\'' +
+      ", name='" + name + '\'' +
+      ", rideId='" + rideId + '\'' +
+      ", currentState='" + currentState + '\'' +
+      ", enterTime=" + enterTime +
+      '}';
   }
 }
