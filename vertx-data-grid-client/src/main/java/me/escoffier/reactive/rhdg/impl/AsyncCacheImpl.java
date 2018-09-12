@@ -3,17 +3,25 @@ package me.escoffier.reactive.rhdg.impl;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import io.vertx.reactivex.core.Context;
 import io.vertx.reactivex.core.Vertx;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.Search;
 import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.query.api.continuous.ContinuousQuery;
+import org.infinispan.query.api.continuous.ContinuousQueryListener;
+import org.infinispan.query.dsl.Query;
+import org.infinispan.query.dsl.QueryFactory;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class AsyncCacheImpl<K, V> implements AsyncCache<K, V> {
@@ -21,6 +29,8 @@ public class AsyncCacheImpl<K, V> implements AsyncCache<K, V> {
 
   private final Vertx vertx;
   private final RemoteCache<K, V> cache;
+  private List<RemoteCacheListener> listeners = new CopyOnWriteArrayList<>();
+  private List<ContinuousQuery<K, V>> queries = new CopyOnWriteArrayList<>();
 
   public AsyncCacheImpl(Vertx vertx, RemoteCache<K, V> cache) {
     this.vertx = Objects.requireNonNull(vertx, "Vertx must be set");
@@ -47,7 +57,9 @@ public class AsyncCacheImpl<K, V> implements AsyncCache<K, V> {
 
   @Override
   public void listen(String address) {
-    cache.addClientListener(new RemoteCacheListener(vertx, address));
+    RemoteCacheListener listener = new RemoteCacheListener(vertx, address);
+    listeners.add(listener);
+    cache.addClientListener(listener);
   }
 
   @Override
@@ -157,5 +169,34 @@ public class AsyncCacheImpl<K, V> implements AsyncCache<K, V> {
           }
         )
         .doOnError(err -> LOGGER.error("Error on all", err));
+  }
+
+  @Override
+  public Completable registerContinuousQuery(Query query, ContinuousQueryListener<K, V> listener) {
+    return Single.just(query)
+      .observeOn(Schedulers.single())
+      .map(q -> {
+        ContinuousQuery<K, V> continuousQuery = Search.getContinuousQuery(this.cache);
+        continuousQuery.addContinuousQueryListener(query, listener);
+        queries.add(continuousQuery);
+        return continuousQuery;
+      }).ignoreElement();
+  }
+
+  @Override
+  public Completable close() {
+    return vertx.rxExecuteBlocking(
+      fut -> {
+        listeners.forEach(cache::removeClientListener);
+        queries.forEach(ContinuousQuery::removeAllListeners);
+        listeners.clear();
+        queries.clear();
+      }
+    ).ignoreElement();
+  }
+
+  @Override
+  public QueryFactory getQueryFactory() {
+    return Search.getQueryFactory(this.cache);
   }
 }

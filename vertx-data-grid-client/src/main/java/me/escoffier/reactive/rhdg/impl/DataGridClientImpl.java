@@ -1,6 +1,5 @@
 package me.escoffier.reactive.rhdg.impl;
 
-import com.redhat.coderland.reactica.model.User;
 import io.reactivex.Single;
 import io.vertx.reactivex.core.Vertx;
 import me.escoffier.reactive.rhdg.AsyncCache;
@@ -13,10 +12,11 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.infinispan.protostream.FileDescriptorSource;
-import org.infinispan.protostream.MessageMarshaller;
 import org.infinispan.protostream.SerializationContext;
+import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,57 +48,60 @@ public class DataGridClientImpl implements DataGridClient {
     LOGGER.info("JDG location: {}:{}", config.getHost(), config.getPort());
     cb.addServer()
       .host(config.getHost())
-      .port(config.getPort())
-      .marshaller(new ProtoStreamMarshaller());
+      .port(config.getPort());
+
+    if (config.getMarshaller() != null) {
+        cb.marshaller(new ProtoStreamMarshaller());
+    }
+
     return vertx.<RemoteCacheManager>rxExecuteBlocking(
       future -> {
         RemoteCacheManager manager = new RemoteCacheManager(cb.build());
+        List<DataGridConfiguration.ProtoRecord> proto = config.getProto();
+        proto.forEach(rec -> {
+          try {
+            LOGGER.info("Registering protobuff stream marshaller: {} => {}", rec.getPath(), rec.getMarshaller());
+            SerializationContext serCtx = ProtoStreamMarshaller.getSerializationContext(manager);
+            serCtx.registerProtoFiles(FileDescriptorSource.fromResources(rec.getPath()));
+            serCtx.registerMarshaller(rec.getMarshaller());
 
-        try {
-          LOGGER.info("Registering protobuff stream marshaller for the User object....");
-          SerializationContext serCtx = ProtoStreamMarshaller.getSerializationContext(manager);
-          serCtx.registerProtoFiles(FileDescriptorSource.fromResources("/user.proto"));
-          serCtx.registerMarshaller(new MessageMarshaller<User>() {
-            @Override
-            public User readFrom(MessageMarshaller.ProtoStreamReader reader) throws IOException {
-              User user = new User();
-              user.setId(reader.readString("id"));
-              user.setName(reader.readString("name"));
-              user.setRideId(reader.readString("rideId"));
-              user.setCurrentState(reader.readString("currentState"));
-              user.setEnterTime(reader.readLong("enterTime"));
-
-              return user;
+            if (rec.isRegisterOnServer()) {
+              RemoteCache<String, String> metadataCache = manager.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
+              metadataCache.putIfAbsent(rec.getPath(), readResource(rec.getPath()));
+              String errors = metadataCache.get(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX);
+              if (errors != null) {
+                future.fail("Some Protobuff schema files contain errors:\n" + errors);
+              }
+              LOGGER.info("Successfully registered the schema {} in {}", rec.getPath(), ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
             }
-
-            @Override
-            public void writeTo(MessageMarshaller.ProtoStreamWriter writer, User user) throws IOException {
-              writer.writeString("id",user.getId());
-              writer.writeString("name",user.getName());
-              writer.writeString("rideId","reactica");
-              writer.writeString("currentState",user.getCurrentState());
-              writer.writeLong("enterTime",user.getEnterTime());
-
-            }
-
-            @Override
-            public Class<? extends User> getJavaClass() {
-              return User.class;
-            }
-
-            @Override
-            public String getTypeName() {
-              return "com.redhat.coderland.reactica.model.User";
-            }
-          });
-
-          future.complete(manager);
-        } catch (IOException e) {
-          LOGGER.error("Error trying to register protobuff marshaller for the User with message " + e.getMessage());
-          future.fail(e);
-        }
+          } catch (IOException e) {
+            LOGGER.error("Error trying to register protobuff marshaller for the {}", rec.getPath(), e);
+            future.tryFail(e);
+          }
+        });
+        future.tryComplete(manager);
       }
     ).doOnSuccess(rcm -> caches = rcm);
+  }
+
+  /**
+   * Note that this is a blocking call, but since are only reading this when we start the verticle once we will accept this as a blocking
+   *
+   * @param resourcePath
+   * @return
+   * @throws IOException
+   */
+  private String readResource(String resourcePath) throws IOException {
+    try (InputStream is = getClass().getResourceAsStream(resourcePath)) {
+      Reader reader = new InputStreamReader(is, "UTF-8");
+      StringWriter writer = new StringWriter();
+      char[] buf = new char[1024];
+      int len;
+      while ((len = reader.read(buf)) != -1) {
+        writer.write(buf, 0, len);
+      }
+      return writer.toString();
+    }
   }
 
   /**
