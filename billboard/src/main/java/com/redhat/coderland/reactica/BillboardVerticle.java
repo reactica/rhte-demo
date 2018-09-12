@@ -41,7 +41,7 @@ public class BillboardVerticle extends AbstractVerticle {
       vertx.eventBus().send("queue:attributes", queue_attributes);
     });
 
-    listenForUserEvents()
+    listenForClQueue()
       .andThen(deployAMQPVerticle())
       .andThen(setupWebApp())
       .doOnComplete(() -> LOGGER.info("Initialization done"))
@@ -63,7 +63,7 @@ public class BillboardVerticle extends AbstractVerticle {
       // Remove used from queue
       Optional<JsonObject> any = queue.stream().filter(json -> json.getString("name").equalsIgnoreCase(user)).findAny();
       if (any.isPresent()) {
-       any.get().put("state", "ON_RIDE");
+        any.get().put("state", "ON_RIDE");
       } else {
         queue.add(new JsonObject().put("name", user).put("entered", enteredAt - Math.round(Math.random() * 10 * MS_PER_MIN))
           .put("state", "ON_RIDE").put("eta", eta));
@@ -74,8 +74,7 @@ public class BillboardVerticle extends AbstractVerticle {
       queue.stream().filter(json -> json.getString("name").equalsIgnoreCase(user)).findAny()
         .ifPresent(entries -> entries.put("state", "COMPLETED_RIDE"));
     }
-    // Send new queue to UI
-    vertx.eventBus().send("queue:state", getQueue());
+
   }
 
   private JsonArray getQueue() {
@@ -87,9 +86,9 @@ public class BillboardVerticle extends AbstractVerticle {
   }
 
   private Completable deployAMQPVerticle() {
-    AmqpToEventBus enter_queue = new AmqpToEventBus();
-    enter_queue.setAddress("user-in-queue");
-    enter_queue.setQueue("ENTER_EVENT_QUEUE");
+    AmqpToEventBus cl_queue = new AmqpToEventBus();
+    cl_queue.setAddress("cl-queue");
+    cl_queue.setQueue("CL_QUEUE");
 
     AmqpConfiguration configuration = new AmqpConfiguration()
       .setContainer("amqp-examples")
@@ -97,20 +96,33 @@ public class BillboardVerticle extends AbstractVerticle {
       .setPort(5672)
       .setUser("user")
       .setPassword("user123")
-      .addAmqpToEventBus(enter_queue);
+      .addAmqpToEventBus(cl_queue);
 
     return vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration))).ignoreElement();
   }
 
-  private Completable listenForUserEvents() {
-    // Listen for user added in queue.
-    MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("user-in-queue");
+  private Completable listenForClQueue() {
+    MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("cl-queue");
     consumer
       .handler(msg -> {
-        String user = msg.body().getString("name");
-        long enteredAt = msg.body().getLong("enterTime");
-        String state = msg.body().getString("currentState");
-        updateQueues(user, enteredAt, state);
+        JsonArray queue = msg.body().getJsonArray("queue");
+        JsonArray res = new JsonArray();
+        queue.forEach(o -> {
+          JsonObject json = (JsonObject) o;
+          String user = json.getString("name");
+          long enteredAt = json.getLong("enterTime");
+          String state = json.getString("currentState");
+
+          res.add(new JsonObject()
+            .put("name", user)
+            .put("entered", enteredAt - Math.round(Math.random() * 10 * MS_PER_MIN))
+            .put("state", state)
+            .put("eta", System.currentTimeMillis()) // TODO Fix me.
+          );
+        });
+
+        // Send new queue to UI
+        vertx.eventBus().send("queue:state", res);
       });
     return consumer.rxCompletionHandler();
   }
