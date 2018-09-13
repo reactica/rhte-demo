@@ -35,7 +35,10 @@ public class BillboardVerticle extends AbstractVerticle {
   public void start(Future<Void> done) {
     // TODO use real ETA computation
     vertx.setPeriodic(5000, t -> {
-      JsonObject queue_attributes = new JsonObject().put("expected_wait_time", MS_PER_MIN);
+      // ETA should be expressed in milliseconds - e.g. for a 2 minute expected wait time,
+      // pass 2 * MS_PER_MIN
+      long expected_wait_time = 2 * MS_PER_MIN;
+      JsonObject queue_attributes = new JsonObject().put("expected_wait_time", expected_wait_time);
       vertx.eventBus().send("queue:attributes", queue_attributes);
     });
 
