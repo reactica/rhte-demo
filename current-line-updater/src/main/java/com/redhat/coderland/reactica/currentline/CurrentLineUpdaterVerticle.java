@@ -34,9 +34,7 @@ public class CurrentLineUpdaterVerticle extends AbstractVerticle {
         .addMarshaller(new ProtoStreamMarshaller())
         .addProtoFile(USER_PROTOBUFF_DEFINITION_FILE, new UserMarshaller(), true)
     )
-      .doOnSuccess(client -> {
-        LOGGER.info("Successfully created a Data Grid Client");
-      })
+      .doOnSuccess(client -> LOGGER.info("Successfully created a Data Grid Client"))
       .flatMap(client -> client.<String, User>getCache(USEREVENTS_CACHENAME))
       .doOnSuccess(cache -> {
         LOGGER.info("Successfully got the cache {} ", USEREVENTS_CACHENAME);
