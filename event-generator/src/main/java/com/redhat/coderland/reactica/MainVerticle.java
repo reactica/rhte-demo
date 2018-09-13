@@ -5,6 +5,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.CompletableHelper;
+import io.vertx.reactivex.config.ConfigRetriever;
 import io.vertx.reactivex.core.AbstractVerticle;
 import me.escoffier.reactive.amqp.AmqpConfiguration;
 import me.escoffier.reactive.amqp.AmqpVerticle;
@@ -15,14 +16,28 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Future<Void> done) {
-
+    ConfigRetriever retriever = ConfigRetriever.create(vertx);
     deployAMQPVerticle()
       .andThen(vertx.rxDeployVerticle(BusinessEventTransformer.class.getName()).ignoreElement())
-      .andThen(vertx.rxDeployVerticle(UserSimulatorVerticle.class.getName()).ignoreElement())
-      .andThen(vertx.rxDeployVerticle(RideSimulator.class.getName()).ignoreElement())
+      .andThen(deploySimulators(retriever))
       .andThen(vertx.rxDeployVerticle(WebVerticle.class.getName()).ignoreElement())
       .subscribe(CompletableHelper.toObserver(done));
+  }
 
+  private Completable deploySimulators(ConfigRetriever retriever) {
+    return retriever.rxGetConfig()
+    .flatMapCompletable(json -> {
+      JsonObject user = json.getJsonObject("user-simulator");
+      JsonObject ride = json.getJsonObject("ride-simulator");
+
+      retriever.listen(change -> {
+        JsonObject configuration = change.getNewConfiguration();
+        vertx.eventBus().publish("configuration", configuration);
+      });
+
+      return vertx.rxDeployVerticle(UserSimulatorVerticle.class.getName(), new DeploymentOptions().setConfig(user)).ignoreElement()
+        .andThen(vertx.rxDeployVerticle(RideSimulator.class.getName(), new DeploymentOptions().setConfig(ride)).ignoreElement());
+    });
   }
 
   private Completable deployAMQPVerticle() {

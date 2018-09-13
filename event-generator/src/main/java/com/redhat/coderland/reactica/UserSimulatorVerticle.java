@@ -16,11 +16,13 @@ import java.util.Random;
 
 /**
  * Creates users and put them in the queue.
- * Generation pace is "random" but around 20 seconds
+ *
+ * Generation pace is "random" but around {@code DEFAULT_PERIOD} +/- {@code DEFAULT_JITTER} seconds.
  */
 public class UserSimulatorVerticle extends AbstractVerticle  {
 
-  private static final int PERIOD = 20000;
+  private static final int DEFAULT_PERIOD = 20;
+  private static final int DEFAULT_JITTER = 10;
 
   private Random random = new Random();
 
@@ -30,6 +32,10 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
    * Cache User name -> Json encoded user
    */
   private AsyncCache<String, String> cache;
+
+  private long period;
+  private int jitter;
+  private boolean enabled;
 
   @Override
   public void start(Future<Void> done) {
@@ -43,7 +49,8 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
         cache -> {
           this.cache = cache;
           LOGGER.info("User Simulator initialized");
-          enqueueUserCreation();
+          configure(config());
+          vertx.eventBus().<JsonObject>consumer("configuration", m -> configure(m.body().getJsonObject("user-simulator")));
           done.complete(null);
         },
         err -> {
@@ -53,13 +60,35 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
       );
   }
 
-  private void enqueueUserCreation() {
-    int delay = random.nextInt(PERIOD) + ((random.nextBoolean() ? -1 : 1 ) * random.nextInt(3000));
-    if (delay < 100) {
-      // Avoid big burst
-      delay = 5000;
+  private void configure(JsonObject json) {
+    if (json == null) {
+      return;
     }
+    LOGGER.info("Configuring the user simulator");
+    period = json.getInteger("period-in-seconds", DEFAULT_PERIOD);
+    jitter = json.getInteger("jitter-in-seconds", DEFAULT_JITTER);
+    boolean isCurrentlyEnabled = enabled;
+    enabled = json.getBoolean("enabled", true);
+    LOGGER.info("User simulator configured with: period={} jitter={} enabled={}", period, jitter, enabled);
+
+    if (! isCurrentlyEnabled  && enabled) {
+      LOGGER.info("Restarting user generation");
+      // Restart generation
+      enqueueUserCreation();
+    }
+  }
+
+  private void enqueueUserCreation() {
+    if (! enabled) {
+      return;
+    }
+
+    long delay = getDelayInMilliSeconds();
     vertx.setTimer(delay, x -> {
+      if (! enabled) {
+        return;
+      }
+
       String name = CuteNameService.generate();
       User user = new User(name, name);
       LOGGER.info("Creating user {}", user.getName());
@@ -68,6 +97,15 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
         .doOnComplete(this::enqueueUserCreation)
         .subscribe();
     });
+  }
+
+  private long getDelayInMilliSeconds() {
+    long delay = period + ((random.nextBoolean() ? -1 : 1 ) * random.nextInt(jitter));
+    if (delay < 1) {
+      // Avoid big burst
+      delay = 5;
+    }
+    return delay * 1000; // Don't forget to convert to millis
   }
 
   private Completable addUserToQueue(User user) {

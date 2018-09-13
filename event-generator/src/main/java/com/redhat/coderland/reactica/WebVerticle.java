@@ -49,6 +49,7 @@ public class WebVerticle extends AbstractVerticle  {
     router.get("/on-ride").handler(this::getOnRide);
     router.get("/completed").handler(this::getCompleted);
     router.get("/all").handler(this::all);
+    router.get("/health").handler(rc -> rc.response().end("OK"));
     router.post("/user").handler(this::addUser);
 
     return vertx.createHttpServer()

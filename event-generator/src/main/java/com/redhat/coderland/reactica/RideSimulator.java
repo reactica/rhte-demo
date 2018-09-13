@@ -2,7 +2,6 @@ package com.redhat.coderland.reactica;
 
 import com.redhat.coderland.reactica.model.Ride;
 import com.redhat.coderland.reactica.model.User;
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.Future;
@@ -25,15 +24,24 @@ import java.util.stream.Collectors;
 /**
  * Simulates ride.
  * <p>
- * Each ride takes 1 minutes + ~10 seconds.
- * Each ride takes at most 10 users from the queue (in order)
+ * Each ride takes {@code DEFAULT_RIDE_DURATION} + ~@{code DEFAULT_JITTER_DURATION} seconds.
+ * Each ride takes at most @{code DEFAULT_USER_ON_RIDE} users from the queue (in order).
  */
 public class RideSimulator extends AbstractVerticle {
+  private static final Logger LOGGER = LogManager.getLogger(UserSimulatorVerticle.class);
 
+  private static final long DEFAULT_RIDE_DURATION = 60;
+  private static final int DEFAULT_JITTER_DURATION = 10;
+  private static final int DEFAULT_USER_ON_RIDE = 10;
 
   private AsyncCache<String, String> cache;
   private Random random = new Random();
-  private static final Logger LOGGER = LogManager.getLogger(UserSimulatorVerticle.class);
+
+  private long duration;
+  private int jitter;
+  private int numberOfUsers;
+  private boolean enabled;
+
 
   @Override
   public void start(Future<Void> done) {
@@ -45,8 +53,9 @@ public class RideSimulator extends AbstractVerticle {
       .subscribe(
         cache -> {
           this.cache = cache;
+          configure(config());
           LOGGER.info("Ride Simulator initialized");
-          enqueueRide();
+          vertx.eventBus().<JsonObject>consumer("configuration", m -> configure(m.body().getJsonObject("ride-simulator")));
           done.complete(null);
         },
         err -> {
@@ -58,7 +67,31 @@ public class RideSimulator extends AbstractVerticle {
     vertx.setPeriodic(60000, x -> cleanup());
   }
 
+  private void configure(JsonObject json) {
+    if (json == null) {
+      return;
+    }
+    LOGGER.info("Configuring the ride simulator");
+    duration = json.getLong("duration-in-seconds", DEFAULT_RIDE_DURATION);
+    jitter = json.getInteger("jitter-in-seconds", DEFAULT_JITTER_DURATION);
+    numberOfUsers = json.getInteger("users-per-ride", DEFAULT_USER_ON_RIDE);
+
+    boolean isCurrentlyEnabled = enabled;
+    enabled = json.getBoolean("enabled", true);
+    LOGGER.info("Ride simulator configured with: duration={} jitter={} users={} enabled={}", duration, jitter, numberOfUsers, enabled);
+
+    if (! isCurrentlyEnabled  && enabled) {
+      LOGGER.info("Restarting ride");
+      // Restart generation
+      enqueueRide();
+    }
+  }
+
   private void enqueueRide() {
+    if (! enabled) {
+      return;
+    }
+
     Ride ride = new Ride().setState(Ride.STATE_PLANNED);
 
     LOGGER.info("Onboarding ride {}", JsonObject.mapFrom(ride).encode());
@@ -77,7 +110,7 @@ public class RideSimulator extends AbstractVerticle {
               LOGGER.info("Ride {} is now in progress", ride.getUuid());
 
               // Schedule the termination
-              vertx.setTimer(getRideDuration(), x -> {
+              vertx.setTimer(getRideDurationInMilliseconds(), x -> {
                 // Ride completed, send event
                 ride.setState(Ride.STATE_COMPLETED);
                 sendRideCompletedEvent(ride);
@@ -134,8 +167,12 @@ public class RideSimulator extends AbstractVerticle {
       Events.create(Events.USER_ON_RIDE, user, ride));
   }
 
-  private int getRideDuration() {
-    return 60000 + random.nextInt(10000);
+  private long getRideDurationInMilliseconds() {
+    long l = duration + random.nextInt(jitter);
+    if (l < 1) {
+      l = duration;
+    }
+    return l * 1000;
   }
 
   private Single<List<User>> getUsers() {
@@ -145,7 +182,7 @@ public class RideSimulator extends AbstractVerticle {
           .map(s -> Json.decodeValue(s, User.class))
           .filter(user -> user.getCurrentState().equalsIgnoreCase(User.STATE_IN_QUEUE))
           .sorted((u1, u2) -> Long.compare(u2.getEnterTime(), u1.getEnterTime()))
-          .limit(10)
+          .limit(numberOfUsers)
           .collect(Collectors.toList()));
   }
 
