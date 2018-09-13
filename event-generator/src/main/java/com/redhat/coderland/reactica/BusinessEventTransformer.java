@@ -1,6 +1,7 @@
 package com.redhat.coderland.reactica;
 
-import io.vertx.core.Future;
+import com.redhat.coderland.reactica.model.Ride;
+import com.redhat.coderland.reactica.model.User;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
 
@@ -26,35 +27,35 @@ public class BusinessEventTransformer extends AbstractVerticle  {
   }
 
   private void onRideEvent(JsonObject event) {
-    Ride ride = Ride.fromJson(event.getJsonObject("ride"));
+    Ride ride = event.getJsonObject("ride").mapTo(Ride.class);
 
     JsonObject business = new JsonObject()
       .put("uuid", ride.getUuid())
-      .put("state", ride.getState().name())
-      .put("name", ride.getUuid()); // TODO do we need a name for the ride?
+      .put("state", ride.getState())
+      .put("name", User.RIDE_ID);
 
     vertx.eventBus().send("to-ride-event-queue", business);
   }
 
   private void onUserEvent(JsonObject event) {
-    User user = User.fromJson(event.getJsonObject("user"));
+    User user = event.getJsonObject("user").mapTo(User.class);
 
     Ride ride = null;
     if (event.getJsonObject("ride") != null) {
-      ride = Ride.fromJson(event.getJsonObject("ride"));
+      ride = event.getJsonObject("ride").mapTo(Ride.class);
     }
 
     JsonObject business = new JsonObject()
       .put("id", user.getName())
       .put("name", user.getName())
-      .put("currentState", user.getState().name())
-      .put("enterTime", user.getEnteredQueueAt());
+      .put("rideId", user.getRideId())
+      .put("currentState", user.getCurrentState())
+      .put("enterTime", user.getEnterTime());
 
     if (ride != null) {
-      business.put("rideId", ride.getUuid());
+      business.put("rideUUID", ride.getUuid());
     }
 
-    System.out.println("Forwarding event to 'to-user-queue' and 'to-enter-event-queue' " + business.encode());
     vertx.eventBus().send("to-user-queue", business);
     vertx.eventBus().send("to-enter-event-queue", business);
   }

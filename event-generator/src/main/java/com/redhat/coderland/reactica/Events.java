@@ -1,5 +1,7 @@
 package com.redhat.coderland.reactica;
 
+import com.redhat.coderland.reactica.model.Ride;
+import com.redhat.coderland.reactica.model.User;
 import io.vertx.core.json.JsonObject;
 
 public class Events {
@@ -38,10 +40,10 @@ public class Events {
     JsonObject json = new JsonObject()
       .put("event", event);
     if (user != null) {
-      json.put("user", user.toJson());
+      json.put("user", JsonObject.mapFrom(user));
     }
     if (ride != null) {
-      json.put("ride", ride.toJson());
+      json.put("ride", JsonObject.mapFrom(ride));
     }
     return json;
   }

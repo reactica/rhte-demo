@@ -20,6 +20,7 @@ public class MainVerticle extends AbstractVerticle {
       .andThen(vertx.rxDeployVerticle(BusinessEventTransformer.class.getName()).ignoreElement())
       .andThen(vertx.rxDeployVerticle(UserSimulatorVerticle.class.getName()).ignoreElement())
       .andThen(vertx.rxDeployVerticle(RideSimulator.class.getName()).ignoreElement())
+      .andThen(vertx.rxDeployVerticle(WebVerticle.class.getName()).ignoreElement())
       .subscribe(CompletableHelper.toObserver(done));
 
   }

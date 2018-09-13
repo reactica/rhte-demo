@@ -1,8 +1,10 @@
 package com.redhat.coderland.reactica;
 
+import com.redhat.coderland.reactica.model.User;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import me.escoffier.reactive.rhdg.DataGridClient;
@@ -58,9 +60,10 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
       delay = 5000;
     }
     vertx.setTimer(delay, x -> {
-      User user = new User();
+      String name = CuteNameService.generate();
+      User user = new User(name, name);
       LOGGER.info("Creating user {}", user.getName());
-      cache.put(user.getName(), user.asJson())
+      cache.put(user.getName(), JsonObject.mapFrom(user).encode())
         .andThen(addUserToQueue(user))
         .doOnComplete(this::enqueueUserCreation)
         .subscribe();
@@ -68,7 +71,7 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
   }
 
   private Completable addUserToQueue(User user) {
-    return cache.put(user.getName(), user.putInQueue().asJson())
+    return cache.put(user.getName(), JsonObject.mapFrom(user.putInQueue()).encode())
       .doOnComplete(() -> vertx.eventBus().send(Events.USER_EVENTS, Events.create(Events.USER_IN_QUEUE, user)));
   }
 

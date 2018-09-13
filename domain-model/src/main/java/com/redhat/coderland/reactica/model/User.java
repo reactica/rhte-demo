@@ -4,9 +4,17 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
 public class User {
+
+  public static final String STATE_UNKNOWN = "UNKNOWN";
+  public static final String STATE_IN_QUEUE = "IN_QUEUE";
+  public static final String STATE_ON_RIDE = "ON_RIDE";
+  public static final String STATE_RIDE_COMPLETED = "RIDE_COMPLETED";
+
+  public static final String RIDE_ID = "reactica";
+
   private String id;
   private String name;
-  private String rideId;
+  private String rideId = RIDE_ID;
   private String currentState;
   private long enterTime; //Time in seconds since beginning of Epoch in UTC
 
@@ -24,9 +32,8 @@ public class User {
   public User(String id, String name) {
     this.id = id;
     this.name = name;
-    this.rideId = "reactica";
-    this.currentState = "IN_QUEUE";
-    this.enterTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+    this.currentState = STATE_UNKNOWN;
+    this.enterTime = -1;
 
   }
 
@@ -80,4 +87,21 @@ public class User {
       ", enterTime=" + enterTime +
       '}';
   }
+
+  public synchronized User putInQueue() {
+    setCurrentState(STATE_IN_QUEUE);
+    setEnterTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+    return this;
+  }
+
+  public User onRide() {
+    setCurrentState(STATE_ON_RIDE);
+    return this;
+  }
+
+  public User completed() {
+    setCurrentState(STATE_RIDE_COMPLETED);
+    return this;
+  }
+
 }
