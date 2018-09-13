@@ -18,12 +18,7 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
-
     LOGGER.info("Starting deployment of Main Verticle");
-//    AmqpToEventBus amqpToEventBus = new AmqpToEventBus();
-//    amqpToEventBus.setAddress("current-line-events");
-//    amqpToEventBus.setQueue("CL_QUEUE");
-
     EventBusToAmqp eventBusToAmqp = new EventBusToAmqp();
     eventBusToAmqp.setAddress("current-line-events");
     eventBusToAmqp.setQueue("CL_QUEUE");
@@ -34,14 +29,7 @@ public class MainVerticle extends AbstractVerticle {
       .setPort(5672)
       .setUser("user")
       .setPassword("user123")
-//      .setAmqpToEventBus(Collections.singletonList(amqpToEventBus))
       .setEventBusToAmqp(Collections.singletonList(eventBusToAmqp));
-
-    //For localhost
-    JsonObject datagridConfigLocalhost = new JsonObject()
-      .put("host","localhost")
-      .put("port",11222);
-
     //For OpenShift
     JsonObject datagridConfigOpenshift = new JsonObject()
       .put("host","eventstore-dg-hotrod")
@@ -50,11 +38,6 @@ public class MainVerticle extends AbstractVerticle {
 
     LOGGER.info("Deploying Other Verticles");
 
-    //For localhost
-//    vertx.rxDeployVerticle(CurrentLineUpdaterVerticle.class.getName(),new DeploymentOptions().setConfig(datagridConfigLocalhost)).subscribe();
-
-
-    //For openshift
     vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration)))
       .flatMap(x -> vertx.rxDeployVerticle(CurrentLineUpdaterVerticle.class.getName(),new DeploymentOptions().setConfig(datagridConfigOpenshift)))
       .subscribe();

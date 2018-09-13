@@ -8,7 +8,7 @@ public class User {
   public static final String STATE_UNKNOWN = "UNKNOWN";
   public static final String STATE_IN_QUEUE = "IN_QUEUE";
   public static final String STATE_ON_RIDE = "ON_RIDE";
-  public static final String STATE_RIDE_COMPLETED = "RIDE_COMPLETED";
+  public static final String STATE_RIDE_COMPLETED = "COMPLETED_RIDE";
 
   public static final String RIDE_ID = "reactica";
 

@@ -86,9 +86,9 @@ public class BillboardVerticle extends AbstractVerticle {
   }
 
   private Completable deployAMQPVerticle() {
-    AmqpToEventBus cl_queue = new AmqpToEventBus();
-    cl_queue.setAddress("cl-queue");
-    cl_queue.setQueue("CL_QUEUE");
+    AmqpToEventBus currentQueue = new AmqpToEventBus();
+    currentQueue.setAddress("cl-queue");
+    currentQueue.setQueue("CL_QUEUE");
 
     AmqpConfiguration configuration = new AmqpConfiguration()
       .setContainer("amqp-examples")
@@ -96,7 +96,7 @@ public class BillboardVerticle extends AbstractVerticle {
       .setPort(5672)
       .setUser("user")
       .setPassword("user123")
-      .addAmqpToEventBus(cl_queue);
+      .addAmqpToEventBus(currentQueue);
 
     return vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration))).ignoreElement();
   }
@@ -110,12 +110,12 @@ public class BillboardVerticle extends AbstractVerticle {
         queue.forEach(o -> {
           JsonObject json = (JsonObject) o;
           String user = json.getString("name");
-          long enteredAt = json.getLong("enterTime");
+          long enteredAt = json.getLong("enterTime") * 1000; // UI expect milliseconds
           String state = json.getString("currentState");
 
           res.add(new JsonObject()
             .put("name", user)
-            .put("entered", enteredAt - Math.round(Math.random() * 10 * MS_PER_MIN))
+            .put("entered", enteredAt)
             .put("state", state)
             .put("eta", System.currentTimeMillis()) // TODO Fix me.
           );
@@ -132,6 +132,7 @@ public class BillboardVerticle extends AbstractVerticle {
     router.route().handler(BodyHandler.create());
 
     router.get("/api/queue/in-queue").handler(ctx -> {
+      // TODO Fix this...
       final JsonArray json = getQueue();
       ctx.response().putHeader("Content-Type", "application/json");
       ctx.response().end(json.encode());
