@@ -110,7 +110,7 @@ public class RideSimulator extends AbstractVerticle {
           .filter(u -> u.getCurrentState().equalsIgnoreCase(User.STATE_RIDE_COMPLETED))
           .filter(u -> u.getEnterTime() < now - max)
           .forEach(u -> {
-            LOGGER.info("Removing {} from cache - ride completed and entered the queue {} minutes ago", u.getName(), now - u.getEnterTime() / 60.0);
+            LOGGER.info("Removing {} from cache - ride completed and entered the queue {} minutes ago", u.getName(), (now - u.getEnterTime()) / 60.0);
             cache.remove(u.getName()).subscribe();
           })
       );

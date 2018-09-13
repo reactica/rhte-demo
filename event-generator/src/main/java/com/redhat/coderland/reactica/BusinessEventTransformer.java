@@ -40,21 +40,12 @@ public class BusinessEventTransformer extends AbstractVerticle  {
   private void onUserEvent(JsonObject event) {
     User user = event.getJsonObject("user").mapTo(User.class);
 
-    Ride ride = null;
-    if (event.getJsonObject("ride") != null) {
-      ride = event.getJsonObject("ride").mapTo(Ride.class);
-    }
-
     JsonObject business = new JsonObject()
       .put("id", user.getName())
       .put("name", user.getName())
       .put("rideId", user.getRideId())
       .put("currentState", user.getCurrentState())
       .put("enterTime", user.getEnterTime());
-
-    if (ride != null) {
-      business.put("rideUUID", ride.getUuid());
-    }
 
     vertx.eventBus().send("to-user-queue", business);
     vertx.eventBus().send("to-enter-event-queue", business);
