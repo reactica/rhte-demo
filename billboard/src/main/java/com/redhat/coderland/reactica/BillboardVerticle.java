@@ -1,7 +1,7 @@
 package com.redhat.coderland.reactica;
 
-import com.redhat.coderland.reactica.model.User;
 import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
 import io.reactivex.Single;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -27,28 +27,21 @@ import me.escoffier.reactive.rhdg.DataGridConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.stream.Collectors;
-
 public class BillboardVerticle extends AbstractVerticle {
 
   private static final int MS_PER_MIN = 60 * 1000;
   private static final Logger LOGGER = LogManager.getLogger(BillboardVerticle.class.getName());
 
-  private List<JsonObject> queue = new ArrayList<>();
   private AsyncCache<String, String> cache;
 
   private WebClient client;
+  private JsonArray last = new JsonArray();
 
   @Override
   public void start(Future<Void> done) {
     // TODO use real ETA computation
     vertx.setPeriodic(5000, t -> {
-      long estimatedWaitingTime = queue.stream().filter(j -> j.getString("state").equalsIgnoreCase(User.STATE_IN_QUEUE)).count() / 10 * MS_PER_MIN;
-      JsonObject queue_attributes = new JsonObject().put("expected_wait_time", estimatedWaitingTime);
+      JsonObject queue_attributes = new JsonObject().put("expected_wait_time", 60 * 1000);
       vertx.eventBus().send("queue:attributes", queue_attributes);
     });
 
@@ -71,20 +64,42 @@ public class BillboardVerticle extends AbstractVerticle {
         }
       );
 
-    listenForClQueue()
-      .andThen(listenForUsers())
+    initQueueEventsListener()
+      .andThen(initNewUserListener())
       .andThen(deployAMQPVerticle())
+      .andThen(setupSimulatorControl())
       .andThen(setupWebApp())
       .doOnComplete(() -> LOGGER.info("Initialization done"))
       .subscribe(CompletableHelper.toObserver(done));
   }
 
-  private JsonArray getQueue() {
-    JsonArray result = new JsonArray();
-    for (JsonObject json : queue) {
-      result.add(json);
-    }
-    return result;
+  private CompletableSource setupSimulatorControl() {
+    MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("control");
+    consumer.handler(message -> {
+      JsonObject body = message.body();
+      String command = body.getString("cmd");
+      switch (command) {
+        case "start-ride-simulator":
+          client.post("/simulators/ride").rxSendJsonObject(new JsonObject().put("enabled", true)).subscribe();
+          break;
+        case "stop-ride-simulator":
+          client.post("/simulators/ride").rxSendJsonObject(new JsonObject().put("enabled", false)).subscribe();
+          break;
+        case "start-user-simulator":
+          client.post("/simulators/users").rxSendJsonObject(new JsonObject().put("enabled", true)).subscribe();
+          break;
+        case "stop-user-simulator":
+          client.post("/simulators/users").rxSendJsonObject(new JsonObject().put("enabled", false)).subscribe();
+          break;
+        default:
+          LOGGER.error("Invalid command: " + command);
+      }
+    });
+    return consumer.rxCompletionHandler();
+  }
+
+  private JsonArray getLastReceivedQueue() {
+    return last;
   }
 
   private Completable deployAMQPVerticle() {
@@ -103,7 +118,7 @@ public class BillboardVerticle extends AbstractVerticle {
     return vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration))).ignoreElement();
   }
 
-  private Completable listenForClQueue() {
+  private Completable initQueueEventsListener() {
     MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("cl-queue");
     consumer
       .handler(msg -> {
@@ -124,12 +139,13 @@ public class BillboardVerticle extends AbstractVerticle {
         });
 
         // Send new queue to UI
+        this.last = res;
         vertx.eventBus().send("queue:state", res);
       });
     return consumer.rxCompletionHandler();
   }
 
-  private Completable listenForUsers() {
+  private Completable initNewUserListener() {
     MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("queue:enter");
     consumer
       .handler(msg -> {
@@ -151,11 +167,12 @@ public class BillboardVerticle extends AbstractVerticle {
     router.route().handler(BodyHandler.create());
 
     router.get("/api/queue/in-queue").handler(ctx -> {
-      // TODO Fix this...
-      final JsonArray json = getQueue();
+      final JsonArray json = getLastReceivedQueue();
       ctx.response().putHeader("Content-Type", "application/json");
       ctx.response().end(json.encode());
     });
+
+    router.get("/health").handler(rc -> rc.response().end("OK"));
 
     BridgeOptions opts = new BridgeOptions()
       .addOutboundPermitted(new PermittedOptions().setAddress("queue:state"))

@@ -8,6 +8,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
+import io.vertx.reactivex.core.eventbus.Message;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import me.escoffier.reactive.rhdg.DataGridClient;
 import me.escoffier.reactive.rhdg.DataGridConfiguration;
@@ -56,6 +57,7 @@ public class RideSimulator extends AbstractVerticle {
           configure(config());
           LOGGER.info("Ride Simulator initialized");
           vertx.eventBus().<JsonObject>consumer("configuration", m -> configure(m.body().getJsonObject("ride-simulator")));
+          vertx.eventBus().<Boolean>consumer("ride-simulator-toggle", b -> toggle(b.body()));
           done.complete(null);
         },
         err -> {
@@ -65,6 +67,16 @@ public class RideSimulator extends AbstractVerticle {
       );
 
     vertx.setPeriodic(60000, x -> cleanup());
+  }
+
+  private void toggle(boolean enabled) {
+    boolean isCurrentlyEnabled = this.enabled;
+    this.enabled = enabled;
+    if (! isCurrentlyEnabled  && enabled) {
+      LOGGER.info("Restarting ride");
+      // Restart generation
+      enqueueRide();
+    }
   }
 
   private void configure(JsonObject json) {

@@ -18,9 +18,11 @@ It:
 
 The script _should be idempotent_.
 
+
 ### Install the application
 
 ```bash
+./create-application-config.sh
 ./deploy-application.sh
 ```
 
@@ -32,5 +34,10 @@ It:
 * deploys the application
 * waits for the readiness of the components
 
-The script _should be idempotent_.
+### Edit the user and ride simulators config
 
+```bash
+oc edit configmap reactica-config
+```
+
+It takes a few seconds to be applied (due to minishift configuration).

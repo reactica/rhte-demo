@@ -51,6 +51,7 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
           LOGGER.info("User Simulator initialized");
           configure(config());
           vertx.eventBus().<JsonObject>consumer("configuration", m -> configure(m.body().getJsonObject("user-simulator")));
+          vertx.eventBus().<Boolean>consumer("user-simulator-toggle", b -> toggle(b.body()));
           done.complete(null);
         },
         err -> {
@@ -58,6 +59,16 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
           done.fail(err);
         }
       );
+  }
+
+  private void toggle(boolean enabled) {
+    boolean isCurrentlyEnabled = this.enabled;
+    this.enabled = enabled;
+    if (! isCurrentlyEnabled  && enabled) {
+      LOGGER.info("Restarting user simulator");
+      // Restart generation
+      enqueueUserCreation();
+    }
   }
 
   private void configure(JsonObject json) {

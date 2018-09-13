@@ -18,6 +18,7 @@
 
   <properties>
     <vertx.verticle>com.redhat.coderland.reactica.BillboardVerticle</vertx.verticle>
+    <vertx.health.path>/health</vertx.health.path>
     <node_modules.path>${project.build.directory}/classes/webroot/node_modules</node_modules.path>
   </properties>
 
@@ -141,18 +142,6 @@
                 </goals>
               </execution>
             </executions>
-            <configuration>
-              <enricher>
-                <excludes>
-                  <exclude>f8-maven-scm</exclude>
-                </excludes>
-                <config>
-                  <vertx-health-check>
-                    <path>/</path>
-                  </vertx-health-check>
-                </config>
-              </enricher>
-            </configuration>
           </plugin>
         </plugins>
       </build>

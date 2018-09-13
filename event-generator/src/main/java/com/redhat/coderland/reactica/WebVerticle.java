@@ -52,10 +52,29 @@ public class WebVerticle extends AbstractVerticle  {
     router.get("/health").handler(rc -> rc.response().end("OK"));
     router.post("/user").handler(this::addUser);
 
+    router.post("/simulators/users").handler(this::toggleUserSimulator);
+    router.post("/simulators/ride").handler(this::toggleRideSimulator);
+
     return vertx.createHttpServer()
       .requestHandler(router::accept)
       .rxListen(8080)
       .ignoreElement();
+  }
+
+  private void toggleUserSimulator(RoutingContext rc) {
+    boolean enabled = rc.getBodyAsJson().getBoolean("enabled");
+    vertx.eventBus().send("user-simulator-toggle", enabled);
+    rc.response()
+      .setStatusCode(204)
+      .end();
+  }
+
+  private void toggleRideSimulator(RoutingContext rc) {
+    boolean enabled = rc.getBodyAsJson().getBoolean("enabled");
+    vertx.eventBus().send("ride-simulator-toggle", enabled);
+    rc.response()
+      .setStatusCode(204)
+      .end();
   }
 
   private void addUser(RoutingContext rc) {
