@@ -2,7 +2,6 @@ package com.redhat.coderland.reactica;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
-import io.reactivex.Single;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -21,9 +20,6 @@ import io.vertx.reactivex.ext.web.handler.sockjs.SockJSHandler;
 import me.escoffier.reactive.amqp.AmqpConfiguration;
 import me.escoffier.reactive.amqp.AmqpToEventBus;
 import me.escoffier.reactive.amqp.AmqpVerticle;
-import me.escoffier.reactive.rhdg.AsyncCache;
-import me.escoffier.reactive.rhdg.DataGridClient;
-import me.escoffier.reactive.rhdg.DataGridConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,8 +28,6 @@ public class BillboardVerticle extends AbstractVerticle {
   private static final int MS_PER_MIN = 60 * 1000;
   private static final Logger LOGGER = LogManager.getLogger(BillboardVerticle.class.getName());
 
-  private AsyncCache<String, String> cache;
-
   private WebClient client;
   private JsonArray last = new JsonArray();
 
@@ -41,28 +35,11 @@ public class BillboardVerticle extends AbstractVerticle {
   public void start(Future<Void> done) {
     // TODO use real ETA computation
     vertx.setPeriodic(5000, t -> {
-      JsonObject queue_attributes = new JsonObject().put("expected_wait_time", 60 * 1000);
+      JsonObject queue_attributes = new JsonObject().put("expected_wait_time", MS_PER_MIN);
       vertx.eventBus().send("queue:attributes", queue_attributes);
     });
 
     client = WebClient.create(vertx, new WebClientOptions().setDefaultHost("event-generator").setDefaultPort(8080));
-
-    Single<DataGridClient> single = DataGridClient.create(vertx, new DataGridConfiguration()
-      .setHost("eventstore-dg-hotrod")
-      .setPort(11333));
-
-    single.flatMap(client -> client.<String, String>getCache("users"))
-      .subscribe(
-        cache -> {
-          this.cache = cache;
-          LOGGER.info("User Cache initialized");
-          done.complete(null);
-        },
-        err -> {
-          LOGGER.error("Unable to initialize the User Cache");
-          done.fail(err);
-        }
-      );
 
     initQueueEventsListener()
       .andThen(initNewUserListener())
