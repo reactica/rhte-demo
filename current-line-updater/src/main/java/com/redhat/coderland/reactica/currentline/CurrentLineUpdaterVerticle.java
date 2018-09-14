@@ -14,6 +14,9 @@ import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.SortOrder;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 public class CurrentLineUpdaterVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger("CurrentLineUpdaterVerticle");
@@ -44,8 +47,16 @@ public class CurrentLineUpdaterVerticle extends AbstractVerticle {
         QueryFactory queryFactory = cache.getQueryFactory();
         Query query = queryFactory.from(User.class)
           .having("rideId").eq("reactica")
+          .and()
+          .not(
+                queryFactory
+                  .having("currentState").eq(User.STATE_RIDE_COMPLETED)
+                  .and()
+                  .having("enterTime").lt(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) - 10*60)
+              )
           .orderBy("enterTime", SortOrder.DESC)
           .build();
+
         return cache.registerContinuousQuery(query, new UserContinuousQueryListener(vertx));
       }).doOnComplete(() -> LOGGER.info("Successfully connected the continuous query"))
       .subscribe(CompletableHelper.toObserver(done));
