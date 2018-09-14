@@ -1,5 +1,6 @@
 package com.redhat.coderland.reactica;
 
+import com.redhat.coderland.reactica.model.User;
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
 import io.vertx.core.DeploymentOptions;
@@ -23,9 +24,12 @@ import me.escoffier.reactive.amqp.AmqpVerticle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class BillboardVerticle extends AbstractVerticle {
 
-  private static final int MS_PER_MIN = 60 * 1000;
   private static final Logger LOGGER = LogManager.getLogger(BillboardVerticle.class.getName());
 
   private WebClient client;
@@ -33,19 +37,11 @@ public class BillboardVerticle extends AbstractVerticle {
 
   @Override
   public void start(Future<Void> done) {
-    // TODO use real ETA computation
-    vertx.setPeriodic(5000, t -> {
-      // ETA should be expressed in milliseconds - e.g. for a 2 minute expected wait time,
-      // pass 2 * MS_PER_MIN
-      long expected_wait_time = 2 * MS_PER_MIN;
-      JsonObject queue_attributes = new JsonObject().put("expected_wait_time", expected_wait_time);
-      vertx.eventBus().send("queue:attributes", queue_attributes);
-    });
-
     client = WebClient.create(vertx, new WebClientOptions().setDefaultHost("event-generator").setDefaultPort(8080));
 
     initQueueEventsListener()
       .andThen(initNewUserListener())
+      .andThen(initWaitingTimeListener())
       .andThen(deployAMQPVerticle())
       .andThen(setupSimulatorControl())
       .andThen(setupWebApp())
@@ -53,7 +49,18 @@ public class BillboardVerticle extends AbstractVerticle {
       .subscribe(CompletableHelper.toObserver(done));
   }
 
-  private CompletableSource setupSimulatorControl() {
+  private Completable initWaitingTimeListener() {
+    MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("waiting-time");
+    consumer.handler(message -> {
+      LOGGER.info("Received the expected wait time {}", message.body().encode());
+      JsonObject attributes = new JsonObject().put("expected_wait_time",
+        ((message.body().getLong("calculated-wait-time") + 1) * 1000));
+      vertx.eventBus().send("queue:attributes", attributes);
+    });
+    return consumer.rxCompletionHandler();
+  }
+
+  private Completable setupSimulatorControl() {
     MessageConsumer<JsonObject> consumer = vertx.eventBus().consumer("control");
     consumer.handler(message -> {
       JsonObject body = message.body();
@@ -87,13 +94,18 @@ public class BillboardVerticle extends AbstractVerticle {
     currentQueue.setAddress("cl-queue");
     currentQueue.setQueue("CL_QUEUE");
 
+    AmqpToEventBus waitingTime = new AmqpToEventBus();
+    waitingTime.setAddress("waiting-time");
+    waitingTime.setQueue("QLC_QUEUE");
+
     AmqpConfiguration configuration = new AmqpConfiguration()
       .setContainer("amqp-examples")
       .setHost("eventstream-amq-amqp")
       .setPort(5672)
       .setUser("user")
       .setPassword("user123")
-      .addAmqpToEventBus(currentQueue);
+      .addAmqpToEventBus(currentQueue)
+      .addAmqpToEventBus(waitingTime);
 
     return vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration))).ignoreElement();
   }
@@ -104,17 +116,31 @@ public class BillboardVerticle extends AbstractVerticle {
       .handler(msg -> {
         JsonArray queue = msg.body().getJsonArray("queue");
         JsonArray res = new JsonArray();
-        queue.forEach(o -> {
-          JsonObject json = (JsonObject) o;
+        AtomicInteger numberOfPeopleWaiting = new AtomicInteger();
+        queue
+          .stream()
+          .map(o -> (JsonObject) o)
+          .sorted((j1, j2) -> j2.getLong("enterTime").compareTo(j1.getLong("enterTime")))
+          .forEach(json -> {
           String user = json.getString("name");
           long enteredAt = json.getLong("enterTime") * 1000; // UI expect milliseconds
           String state = json.getString("currentState");
+
+          long eta = 0;
+          if (state.equalsIgnoreCase(User.STATE_IN_QUEUE)) {
+            // TODO Read config map.
+            eta =
+              (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+              + (numberOfPeopleWaiting.incrementAndGet() / 10 * 60)
+              ) // 10 - number of user per ride, 60 - ride duration
+              * 1000; // To milliseconds
+          }
 
           res.add(new JsonObject()
             .put("name", user)
             .put("entered", enteredAt)
             .put("state", state)
-            .put("eta", System.currentTimeMillis()) // TODO Fix me.
+            .put("eta", eta)
           );
         });
 
