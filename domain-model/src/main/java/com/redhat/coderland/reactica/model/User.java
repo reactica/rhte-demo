@@ -1,7 +1,6 @@
 package com.redhat.coderland.reactica.model;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 
 public class User {
 
@@ -90,7 +89,7 @@ public class User {
 
   public synchronized User putInQueue() {
     setCurrentState(STATE_IN_QUEUE);
-    setEnterTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+    setEnterTime(Instant.now().toEpochMilli() / 1000);
     return this;
   }
 

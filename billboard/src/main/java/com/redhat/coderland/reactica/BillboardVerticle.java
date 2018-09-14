@@ -2,7 +2,6 @@ package com.redhat.coderland.reactica;
 
 import com.redhat.coderland.reactica.model.User;
 import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
@@ -24,8 +23,7 @@ import me.escoffier.reactive.amqp.AmqpVerticle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BillboardVerticle extends AbstractVerticle {
@@ -130,7 +128,7 @@ public class BillboardVerticle extends AbstractVerticle {
           if (state.equalsIgnoreCase(User.STATE_IN_QUEUE)) {
             // TODO Read config map.
             eta =
-              (LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
+              (Instant.now().toEpochMilli() / 1000
               + (numberOfPeopleWaiting.incrementAndGet() / 10 * 60)
               ) // 10 - number of user per ride, 60 - ride duration
               * 1000; // To milliseconds

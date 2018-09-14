@@ -8,15 +8,13 @@ import io.vertx.core.Future;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.eventbus.Message;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import me.escoffier.reactive.rhdg.DataGridClient;
 import me.escoffier.reactive.rhdg.DataGridConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -146,7 +144,7 @@ public class RideSimulator extends AbstractVerticle {
   }
 
   private void cleanup() {
-    long now = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+    long now = Instant.now().toEpochMilli() / 1000;
     long max = 5 * 60;
     cache.all().map(Map::values)
       .subscribe(all ->

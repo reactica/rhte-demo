@@ -183,7 +183,7 @@
 
     switch (row.state) {
       case 'IN_QUEUE':
-        return moment(eta).add(moment().zone() * MS_IN_MIN).fromNow(true);
+        return moment(eta).fromNow(true);
       case 'ON_RIDE':
         return 'N/A';
       case 'COMPLETED_RIDE':
@@ -214,7 +214,7 @@
             if (type === "sort" || type === "type") {
               return data;
             }
-            let stamp = moment(data).add(moment().zone() * MS_IN_MIN);
+            let stamp = moment(data);
             if (Math.abs(moment().diff(stamp, 'seconds')) < 5) {
               return "Moments ago";
             } else {
