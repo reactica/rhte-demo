@@ -1,0 +1,18 @@
+spec:
+  template:
+    spec:
+      volumes:
+        - configMap:
+            name: reactica-config
+            optional: true
+            items:
+            - key: application.yaml
+              path: config.yml
+          name: config
+      containers:
+        - env:
+            - name: VERTX_CONFIG_PATH
+              value: '/deployments/conf/config.yml'
+          volumeMounts:
+            - name: config
+              mountPath: /deployments/conf
