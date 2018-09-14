@@ -9,7 +9,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>queue-length-calculater</artifactId>
+  <artifactId>queue-length-calculator</artifactId>
 
   <properties>
     <vertx.verticle>com.redhat.coderland.reactica.qlc.MainVerticle</vertx.verticle>

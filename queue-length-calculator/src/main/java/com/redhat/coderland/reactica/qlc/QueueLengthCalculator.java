@@ -54,21 +54,21 @@ public class QueueLengthCalculator extends AbstractVerticle {
       configure(config());
       vertx.eventBus().<JsonObject>consumer("configuration", m -> configure(m.body().getJsonObject("ride-simulator")));
 
-      QueryFactory queryFactory = cache.getQueryFactory();
-      Query queueCountQuery = queryFactory.from(User.class)
-        .having("currentState").eq(User.STATE_IN_QUEUE)
-        .and()
-        .having("rideId").eq("reactica")
-        .build();
-
-      vertx.setPeriodic(TimeUnit.SECONDS.toMillis(10), l -> query(queueCountQuery));
+      vertx.setPeriodic(TimeUnit.SECONDS.toMillis(10), l -> query(cache));
 
     })
       .ignoreElement()
       .subscribe(CompletableHelper.toObserver(done));
   }
 
-  private void query(Query queueCountQuery) {
+  private void query(AsyncCache<String, User> cache) {
+    QueryFactory queryFactory = cache.getQueryFactory();
+    Query queueCountQuery = queryFactory.from(User.class)
+      .having("currentState").eq(User.STATE_IN_QUEUE)
+      .and()
+      .having("rideId").eq("reactica")
+      .build();
+
     int queueSize = queueCountQuery.list().size();
     LOGGER.info("Current queue length is " + queueSize);
     int numberOfRidesToLastPerson = Math.floorDiv(queueSize, numberOfUsers);
