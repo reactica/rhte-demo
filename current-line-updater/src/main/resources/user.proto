@@ -5,5 +5,6 @@ message User {
   required string name = 2;
   required string rideId = 3;
   required string currentState = 4;
-  required int64 enterTime = 5;
+  required int64 enterQueueTime = 5;
+  required int64 completedRideTime = 6;
 }

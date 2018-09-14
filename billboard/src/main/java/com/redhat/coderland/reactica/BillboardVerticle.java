@@ -107,7 +107,7 @@ public class BillboardVerticle extends AbstractVerticle {
         queue.forEach(o -> {
           JsonObject json = (JsonObject) o;
           String user = json.getString("name");
-          long enteredAt = json.getLong("enterTime") * 1000; // UI expect milliseconds
+          long enteredAt = json.getLong("enterQueueTime") * 1000; // UI expect milliseconds
           String state = json.getString("currentState");
 
           res.add(new JsonObject()

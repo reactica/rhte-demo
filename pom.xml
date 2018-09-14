@@ -19,6 +19,7 @@
     <module>billboard</module>
     <module>domain-model</module>
     <module>current-line-updater</module>
+    <module>queue-length-calculator</module>
   </modules>
 
 

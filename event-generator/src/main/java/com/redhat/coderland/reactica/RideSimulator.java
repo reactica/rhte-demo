@@ -8,7 +8,6 @@ import io.vertx.core.Future;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.eventbus.Message;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import me.escoffier.reactive.rhdg.DataGridClient;
 import me.escoffier.reactive.rhdg.DataGridConfiguration;
@@ -153,9 +152,9 @@ public class RideSimulator extends AbstractVerticle {
         all.stream()
           .map(s -> Json.decodeValue(s, User.class))
           .filter(u -> u.getCurrentState().equalsIgnoreCase(User.STATE_RIDE_COMPLETED))
-          .filter(u -> u.getEnterTime() < now - max)
+          .filter(u -> u.getEnterQueueTime() < now - max)
           .forEach(u -> {
-            LOGGER.info("Removing {} from cache - ride completed and entered the queue {} minutes ago", u.getName(), (now - u.getEnterTime()) / 60.0);
+            LOGGER.info("Removing {} from cache - ride completed and entered the queue {} minutes ago", u.getName(), (now - u.getEnterQueueTime()) / 60.0);
             cache.remove(u.getName()).subscribe();
           })
       );
@@ -193,7 +192,7 @@ public class RideSimulator extends AbstractVerticle {
         all.stream()
           .map(s -> Json.decodeValue(s, User.class))
           .filter(user -> user.getCurrentState().equalsIgnoreCase(User.STATE_IN_QUEUE))
-          .sorted((u1, u2) -> Long.compare(u2.getEnterTime(), u1.getEnterTime()))
+          .sorted((u1, u2) -> Long.compare(u2.getEnterQueueTime(), u1.getEnterQueueTime()))
           .limit(numberOfUsers)
           .collect(Collectors.toList()));
   }

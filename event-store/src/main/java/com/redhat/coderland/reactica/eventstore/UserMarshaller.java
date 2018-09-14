@@ -13,7 +13,8 @@ public class UserMarshaller implements MessageMarshaller<User> {
     user.setName(reader.readString("name"));
     user.setRideId(reader.readString("rideId"));
     user.setCurrentState(reader.readString("currentState"));
-    user.setEnterTime(reader.readLong("enterTime"));
+    user.setEnterQueueTime(reader.readLong("enterQueueTime"));
+    user.setCompletedRideTime(reader.readLong("completedRideTime"));
     return user;
   }
 
@@ -23,7 +24,8 @@ public class UserMarshaller implements MessageMarshaller<User> {
     writer.writeString("name", user.getName());
     writer.writeString("rideId", "reactica");
     writer.writeString("currentState", user.getCurrentState());
-    writer.writeLong("enterTime", user.getEnterTime());
+    writer.writeLong("enterQueueTime", user.getEnterQueueTime());
+    writer.writeLong("completedRideTime", user.getCompletedRideTime());
   }
 
   @Override

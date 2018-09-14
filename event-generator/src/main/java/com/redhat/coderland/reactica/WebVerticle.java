@@ -128,7 +128,7 @@ public class WebVerticle extends AbstractVerticle  {
               return true; // Accept all
             }
           })
-          .sorted((u1, u2) -> Long.compare(u2.getEnterTime(), u1.getEnterTime()))
+          .sorted((u1, u2) -> Long.compare(u2.getEnterQueueTime(), u1.getEnterQueueTime()))
           .collect(Collectors.toList()));
   }
 }

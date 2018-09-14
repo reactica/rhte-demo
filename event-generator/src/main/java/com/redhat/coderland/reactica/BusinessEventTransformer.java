@@ -45,7 +45,8 @@ public class BusinessEventTransformer extends AbstractVerticle  {
       .put("name", user.getName())
       .put("rideId", user.getRideId())
       .put("currentState", user.getCurrentState())
-      .put("enterTime", user.getEnterTime());
+      .put("enterQueueTime", user.getEnterQueueTime())
+      .put("completedRideTime", user.getCompletedRideTime());
 
     vertx.eventBus().send("to-user-queue", business);
     vertx.eventBus().send("to-enter-event-queue", business);

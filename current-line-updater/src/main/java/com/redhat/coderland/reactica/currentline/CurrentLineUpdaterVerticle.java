@@ -52,9 +52,9 @@ public class CurrentLineUpdaterVerticle extends AbstractVerticle {
                 queryFactory
                   .having("currentState").eq(User.STATE_RIDE_COMPLETED)
                   .and()
-                  .having("enterTime").lt(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) - 10*60)
+                  .having("completedRideTime").lt(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) - 1*60)
               )
-          .orderBy("enterTime", SortOrder.DESC)
+          .orderBy("enterQueueTime", SortOrder.DESC)
           .build();
 
         return cache.registerContinuousQuery(query, new UserContinuousQueryListener(vertx));

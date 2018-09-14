@@ -16,7 +16,8 @@ public class User {
   private String name;
   private String rideId = RIDE_ID;
   private String currentState;
-  private long enterTime; //Time in seconds since beginning of Epoch in UTC
+  private long enterQueueTime; //Time in seconds since beginning of Epoch in UTC
+  private long completedRideTime; //Time in seconds since beginning of Epoch in UTC
 
   /**
    * Constructs an empty User Object
@@ -33,7 +34,7 @@ public class User {
     this.id = id;
     this.name = name;
     this.currentState = STATE_UNKNOWN;
-    this.enterTime = -1;
+    this.enterQueueTime = -1;
 
   }
 
@@ -69,12 +70,20 @@ public class User {
     this.currentState = currentState;
   }
 
-  public long getEnterTime() {
-    return enterTime;
+  public long getEnterQueueTime() {
+    return enterQueueTime;
   }
 
-  public void setEnterTime(long enterTime) {
-    this.enterTime = enterTime;
+  public void setEnterQueueTime(long enterQueueTime) {
+    this.enterQueueTime = enterQueueTime;
+  }
+
+  public long getCompletedRideTime() {
+    return completedRideTime;
+  }
+
+  public void setCompletedRideTime(long completedRideTime) {
+    this.completedRideTime = completedRideTime;
   }
 
   @Override
@@ -84,13 +93,14 @@ public class User {
       ", name='" + name + '\'' +
       ", rideId='" + rideId + '\'' +
       ", currentState='" + currentState + '\'' +
-      ", enterTime=" + enterTime +
+      ", enterQueueTime=" + enterQueueTime +
+      ", completeRideTime=" + completedRideTime +
       '}';
   }
 
   public synchronized User putInQueue() {
     setCurrentState(STATE_IN_QUEUE);
-    setEnterTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+    setEnterQueueTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
     return this;
   }
 
@@ -100,6 +110,7 @@ public class User {
   }
 
   public User completed() {
+    setCompletedRideTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
     setCurrentState(STATE_RIDE_COMPLETED);
     return this;
   }

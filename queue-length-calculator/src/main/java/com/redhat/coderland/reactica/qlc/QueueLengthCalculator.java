@@ -58,20 +58,18 @@ public class QueueLengthCalculator extends AbstractVerticle {
       this.cache = cache;
       configure(config());
 
-      QueryFactory queryFactory = cache.getQueryFactory();
-      Query queueCountQuery = queryFactory.from(User.class)
-        .having("currentState").eq(User.STATE_IN_QUEUE)
-        .and()
-        .having("rideId").eq("reactica")
-        .build();
-
       Scheduler scheduler = io.vertx.reactivex.core.RxHelper.scheduler(vertx);
 
       // Create a periodic event stream using Vertx scheduler
       Flowable<Long> o = Flowable.interval(10, TimeUnit.SECONDS, scheduler);
 
       o.subscribe(time -> {
-//        purgeQuery.list().stream().map(obj -> (User) obj).forEach(user -> cache.remove(user.getId()));
+        QueryFactory queryFactory = cache.getQueryFactory();
+        Query queueCountQuery = queryFactory.from(User.class)
+          .having("currentState").eq(User.STATE_IN_QUEUE)
+          .and()
+          .having("rideId").eq("reactica")
+          .build();
         int queueSize = queueCountQuery.list().size();
         LOGGER.info("Current queue length is " + queueSize);
         int numberOfRidesToLastPerson = Math.floorDiv(queueSize, numberOfUsers);
