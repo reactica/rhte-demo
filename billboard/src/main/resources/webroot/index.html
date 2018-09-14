@@ -130,6 +130,7 @@
       name: name
     });
     highlightedUsers.push(name);
+    sessionStorage.setItem('highlightedUsers', JSON.stringify(highlightedUsers));
     document.getElementById('name').value = '';
   }
 
@@ -192,6 +193,14 @@
   }
 
   $(document).ready(function () {
+
+    // initialize any previously highlighted users
+    let obj = sessionStorage.getItem('highlightedUsers');
+    if (!obj) {
+      highlightedUsers = [];
+    } else {
+      highlightedUsers = JSON.parse(obj);
+    }
 
     // initialize datatable
     $('#queuetable').DataTable({
