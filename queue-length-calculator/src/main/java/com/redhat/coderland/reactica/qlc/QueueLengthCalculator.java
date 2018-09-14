@@ -19,29 +19,25 @@ import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.SortOrder;
 
+import java.time.Duration;
+import java.time.temporal.TemporalAmount;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class QueueLengthCalculator extends AbstractVerticle {
-  private static final Logger LOGGER = LogManager.getLogger("CurrentLineUpdaterVerticle");
+  private static final Logger LOGGER = LogManager.getLogger("QueueLengthCalculator");
   private static final String USER_PROTOBUFF_DEFINITION_FILE = "/user.proto";
   private static final String USEREVENTS_CACHENAME = "userevents";
 
   private static final long DEFAULT_RIDE_DURATION = 60;
   private static final int DEFAULT_USER_ON_RIDE = 10;
 
-  private AsyncCache<String, User> cache;
-
-
   private long duration;
   private int numberOfUsers;
 
-
-
   @Override
-  public void start(Future<Void> done) throws Exception {
+  public void start(Future<Void> done) {
     LOGGER.info("Starting " + this.getClass().getName());
-
 
     DataGridClient.create(
       vertx,
@@ -53,10 +49,10 @@ public class QueueLengthCalculator extends AbstractVerticle {
     )
     .doOnSuccess(client -> LOGGER.info("Successfully created a Data Grid Client"))
     .flatMap(client -> client.<String, User>getCache(USEREVENTS_CACHENAME))
-    .subscribe(cache -> {
+    .doOnSuccess(cache -> {
       LOGGER.info("Successfully got the cache {} ", USEREVENTS_CACHENAME);
-      this.cache = cache;
       configure(config());
+      vertx.eventBus().<JsonObject>consumer("configuration", m -> configure(m.body().getJsonObject("ride-simulator")));
 
       QueryFactory queryFactory = cache.getQueryFactory();
       Query queueCountQuery = queryFactory.from(User.class)
@@ -65,36 +61,31 @@ public class QueueLengthCalculator extends AbstractVerticle {
         .having("rideId").eq("reactica")
         .build();
 
-      Scheduler scheduler = io.vertx.reactivex.core.RxHelper.scheduler(vertx);
+      vertx.setPeriodic(TimeUnit.SECONDS.toMillis(10), l -> query(queueCountQuery));
 
-      // Create a periodic event stream using Vertx scheduler
-      Flowable<Long> o = Flowable.interval(10, TimeUnit.SECONDS, scheduler);
+    })
+      .ignoreElement()
+      .subscribe(CompletableHelper.toObserver(done));
+  }
 
-      o.subscribe(time -> {
-//        purgeQuery.list().stream().map(obj -> (User) obj).forEach(user -> cache.remove(user.getId()));
-        int queueSize = queueCountQuery.list().size();
-        LOGGER.info("Current queue length is " + queueSize);
-        int numberOfRidesToLastPerson = Math.floorDiv(queueSize, numberOfUsers);
-        LOGGER.info("The last person in queue will approx will wait " + numberOfRidesToLastPerson + " number of rides");
-        long approxWaitTime = numberOfRidesToLastPerson * duration;
-        LOGGER.info("Calculated the approx waittime to " + approxWaitTime);
-        JsonObject qlcEventMessage = new JsonObject().put("calculated-wait-time", approxWaitTime);
-        LOGGER.info("Sending queue length event message: " + qlcEventMessage.encodePrettily() );
-        vertx.eventBus().send("to-qlc-queue", qlcEventMessage);
-        LOGGER.info("Message sent");
-      });
-
-//      vertx.setPeriodic(10000, time -> LOGGER.info("Querying the datagrid for the current line at time " + time ));
-
-      done.complete(null);
-    });
+  private void query(Query queueCountQuery) {
+    int queueSize = queueCountQuery.list().size();
+    LOGGER.info("Current queue length is " + queueSize);
+    int numberOfRidesToLastPerson = Math.floorDiv(queueSize, numberOfUsers);
+    LOGGER.info("The last person in queue will approx will wait " + numberOfRidesToLastPerson + " number of rides");
+    long approxWaitTime = numberOfRidesToLastPerson * duration;
+    LOGGER.info("Calculated the approx waittime to " + approxWaitTime);
+    JsonObject qlcEventMessage = new JsonObject().put("calculated-wait-time", approxWaitTime);
+    LOGGER.info("Sending queue length event message: " + qlcEventMessage.encodePrettily() );
+    vertx.eventBus().send("to-qlc-queue", qlcEventMessage);
+    LOGGER.info("Message sent");
   }
 
   private void configure(JsonObject json) {
     if (json == null) {
       return;
     }
-    LOGGER.info("Configuring the ride simulator");
+    LOGGER.info("Configuring the queue length calculator simulator");
     duration = json.getLong("duration-in-seconds", DEFAULT_RIDE_DURATION);
     numberOfUsers = json.getInteger("users-per-ride", DEFAULT_USER_ON_RIDE);
 
