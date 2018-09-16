@@ -47,12 +47,7 @@ public class CurrentLineUpdaterVerticle extends AbstractVerticle {
         Query query = queryFactory.from(User.class)
           .having("rideId").eq("reactica")
           .and()
-          .not(
-                queryFactory
-                  .having("currentState").eq(User.STATE_RIDE_COMPLETED)
-                  .and()
-                  .having("completedRideTime").lt((Instant.now().toEpochMilli() / 1000) - 10*60)
-              )
+          .having("currentState").in(User.STATE_IN_QUEUE,User.STATE_ON_RIDE)
           .orderBy("enterQueueTime", SortOrder.DESC)
           .build();
 

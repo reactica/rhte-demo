@@ -118,7 +118,7 @@ public class BillboardVerticle extends AbstractVerticle {
         queue
           .stream()
           .map(o -> (JsonObject) o)
-          .sorted((j1, j2) -> j2.getLong("enterTime").compareTo(j1.getLong("enterTime")))
+          .sorted((j1, j2) -> j2.getLong("enterQueueTime").compareTo(j1.getLong("enterQueueTime")))
           .forEach(json -> {
           String user = json.getString("name");
           long enteredAt = json.getLong("enterQueueTime") * 1000; // UI expect milliseconds

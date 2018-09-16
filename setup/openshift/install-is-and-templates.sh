@@ -15,7 +15,7 @@ if $(oc get is/jboss-datagrid72-openshift -n openshift > /dev/null 2>&1); then
       oc create -f https://raw.githubusercontent.com/jboss-container-images/jboss-amq-7-broker-openshift-image/amq-broker-71/amq-broker-7-image-streams.yaml -n openshift --as=system:admin
   fi
 
-  oc -n openshift import-image jboss-amq-63:1.4 --as=system:admin > /dev/null && echo "jboss-amq-63:1.4 image successfully imported"
+  oc -n openshift import-image amq-broker-71-openshift:1.0 --as=system:admin > /dev/null && echo "amq-broker-71-openshift:1.0 image successfully imported"
 
 info "### INSTALLING TEMPLATES FOR AMQ AND RDG"
 

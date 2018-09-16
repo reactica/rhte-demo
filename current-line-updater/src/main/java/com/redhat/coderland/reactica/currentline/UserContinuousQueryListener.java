@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.infinispan.query.api.continuous.ContinuousQueryListener;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,7 +32,9 @@ public class UserContinuousQueryListener implements ContinuousQueryListener<Stri
   }
 
   private void fire() {
-    vertx.eventBus().send(CURRENT_LINE_EVENTS, generateOutput());
+    JsonObject users = generateOutput();
+    LOGGER.info("Send the following list of users to the eventBus at time( " + (Instant.now().toEpochMilli()/1000) + ") : " + users.encodePrettily());
+    vertx.eventBus().send(CURRENT_LINE_EVENTS, users);
   }
 
   @Override
