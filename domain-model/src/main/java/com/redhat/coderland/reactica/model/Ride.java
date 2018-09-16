@@ -10,6 +10,10 @@ public class Ride {
   public static final String STATE_IN_PROGRESS = "IN_PROGRESS";
   public static final String STATE_COMPLETED = "COMPLETED";
 
+  public static final long DEFAULT_RIDE_DURATION = 60;
+  public static final int DEFAULT_JITTER_DURATION = 10;
+  public static final int DEFAULT_USER_ON_RIDE = 10;
+
   private String uuid;
 
   private String state;
