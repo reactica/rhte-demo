@@ -130,6 +130,7 @@
       name: name
     });
     highlightedUsers.push(name);
+    sessionStorage.setItem('highlightedUsers', JSON.stringify(highlightedUsers));
     document.getElementById('name').value = '';
   }
 
@@ -183,7 +184,7 @@
 
     switch (row.state) {
       case 'IN_QUEUE':
-        return moment(eta).add(moment().zone() * MS_IN_MIN).fromNow(true);
+        return moment(eta).fromNow(true);
       case 'ON_RIDE':
         return 'N/A';
       case 'COMPLETED_RIDE':
@@ -192,6 +193,14 @@
   }
 
   $(document).ready(function () {
+
+    // initialize any previously highlighted users
+    let obj = sessionStorage.getItem('highlightedUsers');
+    if (!obj) {
+      highlightedUsers = [];
+    } else {
+      highlightedUsers = JSON.parse(obj);
+    }
 
     // initialize datatable
     $('#queuetable').DataTable({
@@ -214,7 +223,7 @@
             if (type === "sort" || type === "type") {
               return data;
             }
-            let stamp = moment(data).add(moment().zone() * MS_IN_MIN);
+            let stamp = moment(data);
             if (Math.abs(moment().diff(stamp, 'seconds')) < 5) {
               return "Moments ago";
             } else {

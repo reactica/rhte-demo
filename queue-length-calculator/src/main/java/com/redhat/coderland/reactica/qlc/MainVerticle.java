@@ -15,7 +15,7 @@ public class MainVerticle extends AbstractVerticle {
 
 
   @Override
-  public void start(Future<Void> done) throws Exception {
+  public void start(Future<Void> done) {
     ConfigRetriever retriever = ConfigRetriever.create(vertx);
     deployAMQPVerticle()
       .andThen(deployQueueLengthCalculator(retriever))
@@ -26,23 +26,21 @@ public class MainVerticle extends AbstractVerticle {
   private Completable deployQueueLengthCalculator(ConfigRetriever retriever) {
     return retriever.rxGetConfig()
       .flatMapCompletable(json -> {
-        JsonObject user = json.getJsonObject("user-simulator");
         JsonObject ride = json.getJsonObject("ride-simulator");
 
         retriever.listen(change -> {
           JsonObject configuration = change.getNewConfiguration();
           vertx.eventBus().publish("configuration", configuration);
         });
-
-        return vertx.rxDeployVerticle(QueueLengthCalculator.class.getName(), new DeploymentOptions().setConfig(user)).ignoreElement();
+        return vertx.rxDeployVerticle(QueueLengthCalculator.class.getName(), new DeploymentOptions().setConfig(ride)).ignoreElement();
       });
   }
 
 
   private Completable deployAMQPVerticle() {
-    EventBusToAmqp user_queue = new EventBusToAmqp();
-    user_queue.setAddress("to-qlc-queue");
-    user_queue.setQueue("QLC_QUEUE");
+    EventBusToAmqp qlc = new EventBusToAmqp();
+    qlc.setAddress("to-qlc-queue");
+    qlc.setQueue("QLC_QUEUE");
 
 
     AmqpConfiguration configuration = new AmqpConfiguration()
@@ -51,7 +49,7 @@ public class MainVerticle extends AbstractVerticle {
       .setPort(5672)
       .setUser("user")
       .setPassword("user123")
-      .addEventBusToAmqp(user_queue);
+      .addEventBusToAmqp(qlc);
 
     return vertx.rxDeployVerticle(AmqpVerticle.class.getName(), new DeploymentOptions().setConfig(JsonObject.mapFrom(configuration))).ignoreElement();
   }

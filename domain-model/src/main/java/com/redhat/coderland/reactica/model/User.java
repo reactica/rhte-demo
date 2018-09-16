@@ -1,7 +1,6 @@
 package com.redhat.coderland.reactica.model;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 
 public class User {
 
@@ -100,7 +99,7 @@ public class User {
 
   public synchronized User putInQueue() {
     setCurrentState(STATE_IN_QUEUE);
-    setEnterQueueTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+    setEnterQueueTime(Instant.now().toEpochMilli() / 1000);
     return this;
   }
 
@@ -110,7 +109,7 @@ public class User {
   }
 
   public User completed() {
-    setCompletedRideTime(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+    setCompletedRideTime(Instant.now().toEpochMilli() / 1000);
     setCurrentState(STATE_RIDE_COMPLETED);
     return this;
   }

@@ -6,7 +6,7 @@
 ./deploy.sh
 ```
 
-This script requires `minishift` top be available in your `$PATH` and Internet access.
+This script requires `minishift`, `curl`, and `python` to be available in your `$PATH` and Internet access.
 
 It:
 
@@ -26,7 +26,7 @@ The script _should be idempotent_.
 ./deploy-application.sh
 ```
 
-This script requires `minishift` top be available in your `$PATH` and Internet access.
+This script requires `mvn` and `minishift` to be available in your `$PATH` and Internet access.
 
 It:
 

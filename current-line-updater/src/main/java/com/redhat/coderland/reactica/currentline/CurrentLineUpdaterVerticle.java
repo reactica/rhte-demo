@@ -14,8 +14,7 @@ import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.SortOrder;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 
 public class CurrentLineUpdaterVerticle extends AbstractVerticle {
 
@@ -52,7 +51,7 @@ public class CurrentLineUpdaterVerticle extends AbstractVerticle {
                 queryFactory
                   .having("currentState").eq(User.STATE_RIDE_COMPLETED)
                   .and()
-                  .having("completedRideTime").lt(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) - 1*60)
+                  .having("completedRideTime").lt((Instant.now().toEpochMilli() / 1000) - 10*60)
               )
           .orderBy("enterQueueTime", SortOrder.DESC)
           .build();

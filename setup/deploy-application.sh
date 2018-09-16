@@ -19,8 +19,13 @@ waitForPodReadiness "event-store" 1
 waitForPodState "current-line-updater" "Running"
 waitForPodReadiness "current-line-updater" 1
 
+waitForPodState "queue-length-calculator" "Running"
+waitForPodReadiness "queue-length-calculator" 1
+
 waitForPodState "billboard" "Running"
 waitForPodReadiness "billboard" 1
+
+
 
 
 

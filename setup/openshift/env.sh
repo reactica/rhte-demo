@@ -35,6 +35,9 @@ function minishift_start {
     else
       minishift start --openshift-version=$1
     fi
+    info "Setting timezone..."
+    minishift ssh sudo timedatectl set-timezone $(curl -s 'https://timezoneapi.io/api/ip' | python -c "import sys, json; print json.load(sys.stdin)['data']['timezone']['id']")
+    minishift openshift restart
   fi
 }
 
