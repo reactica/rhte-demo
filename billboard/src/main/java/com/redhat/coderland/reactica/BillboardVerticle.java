@@ -1,5 +1,6 @@
 package com.redhat.coderland.reactica;
 
+import com.redhat.coderland.reactica.model.Ride;
 import com.redhat.coderland.reactica.model.User;
 import io.reactivex.Completable;
 import io.vertx.core.DeploymentOptions;
@@ -10,6 +11,7 @@ import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.reactivex.CompletableHelper;
+import io.vertx.reactivex.config.ConfigRetriever;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
 import io.vertx.reactivex.ext.web.Router;
@@ -33,11 +35,21 @@ public class BillboardVerticle extends AbstractVerticle {
   private WebClient client;
   private JsonArray last = new JsonArray();
 
+
+  private long rideDuration;
+  private Integer numberOfUsers;
+
   @Override
   public void start(Future<Void> done) {
     client = WebClient.create(vertx, new WebClientOptions().setDefaultHost("event-generator").setDefaultPort(8080));
 
-    initQueueEventsListener()
+    ConfigRetriever retriever = ConfigRetriever.create(vertx);
+
+    retriever.rxGetConfig().doOnSuccess(json -> {
+      configure(json);
+      retriever.listen(c -> configure(c.getNewConfiguration()));
+    }).ignoreElement()
+      .andThen(initQueueEventsListener())
       .andThen(initNewUserListener())
       .andThen(initWaitingTimeListener())
       .andThen(deployAMQPVerticle())
@@ -45,6 +57,15 @@ public class BillboardVerticle extends AbstractVerticle {
       .andThen(setupWebApp())
       .doOnComplete(() -> LOGGER.info("Initialization done"))
       .subscribe(CompletableHelper.toObserver(done));
+  }
+
+  private void configure(JsonObject json) {
+    if (json == null) {
+      return;
+    }
+    LOGGER.info("Configuring the billboard");
+    rideDuration = json.getLong("duration-in-seconds", Ride.DEFAULT_RIDE_DURATION);
+    numberOfUsers = json.getInteger("users-per-ride", Ride.DEFAULT_USER_ON_RIDE);
   }
 
   private Completable initWaitingTimeListener() {
@@ -126,11 +147,10 @@ public class BillboardVerticle extends AbstractVerticle {
 
           long eta = 0;
           if (state.equalsIgnoreCase(User.STATE_IN_QUEUE)) {
-            // TODO Read config map.
             eta =
               (Instant.now().toEpochMilli() / 1000
-              + (numberOfPeopleWaiting.incrementAndGet() / 10 * 60)
-              ) // 10 - number of user per ride, 60 - ride duration
+              + (numberOfPeopleWaiting.incrementAndGet() / numberOfUsers * rideDuration)
+              )
               * 1000; // To milliseconds
           }
 

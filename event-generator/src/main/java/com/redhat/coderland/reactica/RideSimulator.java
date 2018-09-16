@@ -29,10 +29,6 @@ import java.util.stream.Collectors;
 public class RideSimulator extends AbstractVerticle {
   private static final Logger LOGGER = LogManager.getLogger(UserSimulatorVerticle.class);
 
-  private static final long DEFAULT_RIDE_DURATION = 60;
-  private static final int DEFAULT_JITTER_DURATION = 10;
-  private static final int DEFAULT_USER_ON_RIDE = 10;
-
   private AsyncCache<String, String> cache;
   private Random random = new Random();
 
@@ -82,9 +78,9 @@ public class RideSimulator extends AbstractVerticle {
       return;
     }
     LOGGER.info("Configuring the ride simulator");
-    duration = json.getLong("duration-in-seconds", DEFAULT_RIDE_DURATION);
-    jitter = json.getInteger("jitter-in-seconds", DEFAULT_JITTER_DURATION);
-    numberOfUsers = json.getInteger("users-per-ride", DEFAULT_USER_ON_RIDE);
+    duration = json.getLong("duration-in-seconds", Ride.DEFAULT_RIDE_DURATION);
+    jitter = json.getInteger("jitter-in-seconds", Ride.DEFAULT_JITTER_DURATION);
+    numberOfUsers = json.getInteger("users-per-ride", Ride.DEFAULT_USER_ON_RIDE);
 
     boolean isCurrentlyEnabled = enabled;
     enabled = json.getBoolean("enabled", true);

@@ -18,7 +18,6 @@
 
   <properties>
     <vertx.verticle>com.redhat.coderland.reactica.BillboardVerticle</vertx.verticle>
-    <vertx.health.path>/health</vertx.health.path>
     <node_modules.path>${project.build.directory}/classes/webroot/node_modules</node_modules.path>
   </properties>
 
@@ -38,6 +37,14 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-config</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-config-yaml</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
