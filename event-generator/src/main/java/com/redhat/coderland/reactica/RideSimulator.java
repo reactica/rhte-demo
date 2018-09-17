@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -182,14 +183,18 @@ public class RideSimulator extends AbstractVerticle {
   }
 
   private Single<List<User>> getUsers() {
-    return cache.all().map(Map::values)
-      .map(all ->
-        all.stream()
-          .map(s -> Json.decodeValue(s, User.class))
-          .filter(user -> user.getCurrentState().equalsIgnoreCase(User.STATE_IN_QUEUE))
-          .sorted((u1, u2) -> Long.compare(u2.getEnterQueueTime(), u1.getEnterQueueTime()))
+    return cache.all().map(all -> all.values()
+      .stream()
+      .map(s -> Json.decodeValue(s, User.class))
+      .filter(user -> user.getCurrentState().equalsIgnoreCase(User.STATE_IN_QUEUE))
+      .sorted(Comparator.comparing(User::getEnterQueueTime))
+      .collect(Collectors.toList())
+    )
+      .map(sorted ->
+        sorted.stream()
           .limit(numberOfUsers)
-          .collect(Collectors.toList()));
+          .collect(Collectors.toList())
+      );
   }
 
 

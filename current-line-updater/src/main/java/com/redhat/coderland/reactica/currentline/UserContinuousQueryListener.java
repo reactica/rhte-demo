@@ -26,8 +26,21 @@ public class UserContinuousQueryListener implements ContinuousQueryListener<Stri
   }
 
   private JsonObject generateOutput() {
+    long currentTime = Instant.now().toEpochMilli() / 1000;
     JsonObject json = new JsonObject();
-    JsonArray queue = current.values().stream().map(JsonObject::mapFrom).collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+    JsonArray queue = current.values().stream()
+      .filter(user -> {
+        if (user.getCurrentState().equals(User.STATE_IN_QUEUE) || user.getCurrentState().equals(User.STATE_ON_RIDE)) {
+          return true;
+        }
+        else if(user.getCurrentState().equals(User.STATE_RIDE_COMPLETED) && user.getCompletedRideTime() > (currentTime - 30))
+        {
+          return true;
+        } else {
+          return false;
+        }
+      })
+      .map(JsonObject::mapFrom).collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
     return json.put("queue", queue);
   }
 
