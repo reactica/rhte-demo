@@ -1,11 +1,11 @@
 ---
 user-simulator:
-  period-in-seconds: 20
-  jitter-in-seconds: 10
+  period-in-seconds: 5
+  jitter-in-seconds: 2
   enabled: true
 
 ride-simulator:
-  duration-in-seconds: 60
-  users-per-ride: 10
-  jitter-in-seconds: 10
+  duration-in-seconds: 30
+  users-per-ride: 5
+  jitter-in-seconds: 5
   enabled: true
