@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * Each ride takes at most @{code DEFAULT_USER_ON_RIDE} users from the queue (in order).
  */
 public class RideSimulator extends AbstractVerticle {
-  private static final Logger LOGGER = LogManager.getLogger(UserSimulatorVerticle.class);
+  private static final Logger LOGGER = LogManager.getLogger(RideSimulator.class);
 
   private AsyncCache<String, String> cache;
   private Random random = new Random();
@@ -142,7 +142,7 @@ public class RideSimulator extends AbstractVerticle {
 
   private void cleanup() {
     long now = Instant.now().toEpochMilli() / 1000;
-    long max = 5 * 60;
+    long max = 1 * 60;
     cache.all().map(Map::values)
       .subscribe(all ->
         all.stream()
