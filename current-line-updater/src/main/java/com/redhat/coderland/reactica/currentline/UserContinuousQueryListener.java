@@ -9,8 +9,10 @@ import org.apache.logging.log4j.Logger;
 import org.infinispan.query.api.continuous.ContinuousQueryListener;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 public class UserContinuousQueryListener implements ContinuousQueryListener<String, User> {
 
@@ -28,19 +30,23 @@ public class UserContinuousQueryListener implements ContinuousQueryListener<Stri
   private JsonObject generateOutput() {
     long currentTime = Instant.now().toEpochMilli() / 1000;
     JsonObject json = new JsonObject();
-    JsonArray queue = current.values().stream()
+    Stream<User> inQueueOrOnRide = current.values().stream()
       .filter(user -> {
         if (user.getCurrentState().equals(User.STATE_IN_QUEUE) || user.getCurrentState().equals(User.STATE_ON_RIDE)) {
-          return true;
-        }
-        else if(user.getCurrentState().equals(User.STATE_RIDE_COMPLETED) && user.getCompletedRideTime() > (currentTime - 30))
-        {
           return true;
         } else {
           return false;
         }
-      })
+      });
+    Stream<User> completedSorted = current.values().stream()
+      .filter(user -> user.getCurrentState().equals(User.STATE_RIDE_COMPLETED))
+      .sorted((j1,j2) -> new Long(j2.getCompletedRideTime()).compareTo(j1.getCompletedRideTime()));
+
+    Stream<User> userStream = Stream.concat(inQueueOrOnRide, completedSorted.limit(10));
+
+    JsonArray queue = userStream
       .map(JsonObject::mapFrom).collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+
     return json.put("queue", queue);
   }
 
