@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
+SCRIPT_DIR=$(dirname "$0")
 
 export MINISHIFT_USERNAME="admin"
 export MINISHIFT_PASSWORD="admin"
 export OS_PROJECT_NAME="reactive-demo"
 
 
-source openshift/env.sh
+source ${SCRIPT_DIR}/openshift/env.sh
 
 # Start minishift is needed
 minishift_start "v3.9.0"
@@ -21,7 +22,7 @@ setSystemAccountRoleToUser ${OS_PROJECT_NAME}
 minishift_login ${MINISHIFT_USERNAME} ${MINISHIFT_PASSWORD}
 
 # Install image streams
-source openshift/install-is-and-templates.sh
+source ${SCRIPT_DIR}/openshift/install-is-and-templates.sh
 
 
 if oc get dc | grep "eventstore-dg"; then
