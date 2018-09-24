@@ -79,7 +79,7 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
     period = json.getInteger("period-in-seconds", DEFAULT_PERIOD);
     jitter = json.getInteger("jitter-in-seconds", DEFAULT_JITTER);
     boolean isCurrentlyEnabled = enabled;
-    enabled = json.getBoolean("enabled", true);
+    enabled = json.getBoolean("enabled", false);
     LOGGER.info("User simulator configured with: period={} jitter={} enabled={}", period, jitter, enabled);
 
     if (! isCurrentlyEnabled  && enabled) {
