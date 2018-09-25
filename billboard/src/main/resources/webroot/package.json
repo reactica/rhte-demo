@@ -8,13 +8,14 @@
   "description": "Red Hat Coderland Reactica Demo",
   "homepage": "https://github.com/reactica",
   "dependencies": {
-    "vertx3-eventbus-client": "3.4.2",
-    "jquery": "3.3.1",
-    "sockjs-client": "1.1.5",
-    "bootstrap": "3.3.7",
+    "bootstrap": "4.1.2",
     "datatables.net": "1.10.19",
-    "datatables.net-bs": "1.10.19",
-    "moment": "2.22.2"
+    "datatables.net-bs4": "1.10.19",
+    "jquery": "3.3.1",
+    "moment": "2.22.2",
+    "popper.js": "^1.14.4",
+    "sockjs-client": "1.1.5",
+    "vertx3-eventbus-client": "3.4.2"
   },
   "engines": {
     "node": ">=0.10.10"

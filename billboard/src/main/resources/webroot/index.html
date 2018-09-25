@@ -8,15 +8,17 @@
 
 </head>
 <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css"/>
 <link href="css/reactica.css" rel="stylesheet">
 <body>
 
 <script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="node_modules/popper.js/dist/popper.min.js"></script>
+<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script src="node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
 <script src="node_modules/moment/moment.js"></script>
 <script src="node_modules/sockjs-client/dist/sockjs.min.js"></script>
-<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 <script src="node_modules/vertx3-eventbus-client/vertx-eventbus.js"></script>
 
 
@@ -55,14 +57,18 @@
                     </div>
 
                     <!-- enter queue form -->
-                    <div class="queue row">
-                        <div class="col-md-12">
+                    <div class="queue row justify-content-center">
+                        <div class="col-md-4">
                             <form class="form-inline">
-                                <div class="form-group">
-                                    <label for="name">Name</label>
-                                    <input type="text" class="form-control" id="name" placeholder="Jane Doe">
+                                <div class="form-group row">
+                                    <label class="col-md-2 col-form-label" for="name">Name</label>
+                                    <div class="col-md-8">
+                                      <input type="text" class="form-control" id="name" placeholder="Jane Doe">
+                                    </div>
+                                    <div class="col-md-2">
+                                      <button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-default">Enter</button>
+                                    </div>
                                 </div>
-                                <button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-default">Enter</button>
                             </form>
                         </div>
                     </div>
@@ -72,8 +78,8 @@
                         <div class="col-md-12">
                             <div id="table_wrapper" class="table-responsive">
 
-                                <table style="width: 100%;" id="queuetable" class="table table-striped table-bordered table-condensed">
-                                    <thead>
+                                <table style="width: 100%;" id="queuetable" class="table table-striped table-bordered table-sm table-condensed">
+                                    <thead class="thead-dark">
                                     <tr>
                                         <th>Name</th>
                                         <th>Time in Queue</th>
@@ -141,13 +147,13 @@
     table.rows().every(function (rowIdx, tableLoop, rowLoop) {
       switch (this.data().state) {
         case 'IN_QUEUE':
-          $(this.node()).addClass('info');
+          $(this.node()).addClass('table-info');
           break;
         case 'ON_RIDE':
-          $(this.node()).addClass('warning');
+          $(this.node()).addClass('table-warning');
           break;
         case 'COMPLETED_RIDE':
-          $(this.node()).addClass('success');
+          $(this.node()).addClass('table-success');
           break;
       }
     });
@@ -242,6 +248,17 @@
         }
       ],
 
+    });
+
+    $('form').on('submit', function(event){
+      event.preventDefault();
+    });
+
+    $('#name').keypress(function(e) {
+      // Enter pressed?
+      if(e.which === 10 || e.which === 13) {
+        enterRide(this.value);
+      }
     });
 
     $('#queuetable_filter > label > input').attr('placeholder', 'Search...');
