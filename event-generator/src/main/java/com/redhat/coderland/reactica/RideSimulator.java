@@ -72,6 +72,9 @@ public class RideSimulator extends AbstractVerticle {
       // Restart generation
       enqueueRide();
     }
+    if (isCurrentlyEnabled && !enabled) {
+      LOGGER.info("Stopping ride");
+    }
   }
 
   private void configure(JsonObject json) {

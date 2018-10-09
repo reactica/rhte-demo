@@ -69,6 +69,9 @@ public class UserSimulatorVerticle extends AbstractVerticle  {
       // Restart generation
       enqueueUserCreation();
     }
+    if (isCurrentlyEnabled && !enabled) {
+      LOGGER.info("Stopping user simulator");
+    }
   }
 
   private void configure(JsonObject json) {

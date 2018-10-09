@@ -97,6 +97,9 @@ public class BillboardVerticle extends AbstractVerticle {
         case "stop-user-simulator":
           client.post("/simulators/users").rxSendJsonObject(new JsonObject().put("enabled", false)).subscribe();
           break;
+        case "clear-users":
+          client.delete("/simulators/users").rxSend().subscribe();
+          break;
         default:
           LOGGER.error("Invalid command: " + command);
       }

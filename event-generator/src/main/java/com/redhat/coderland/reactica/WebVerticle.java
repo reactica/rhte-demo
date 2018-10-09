@@ -14,6 +14,8 @@ import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import me.escoffier.reactive.rhdg.AsyncCache;
 import me.escoffier.reactive.rhdg.DataGridClient;
 import me.escoffier.reactive.rhdg.DataGridConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -25,12 +27,24 @@ public class WebVerticle extends AbstractVerticle  {
   private static final String CONTENT_TYPE = "Content-Type";
   private static final String JSON_CONTENT_TYPE = "application/json; charset=UTF-8";
   private AsyncCache<String, String> cache;
+  private AsyncCache<String, String> usereventcache;
+  private static final Logger LOGGER = LogManager.getLogger(WebVerticle.class);
 
   @Override
   public void start(Future<Void> done) {
     initializeCache()
+      .andThen(initializeUserEventCache())
       .andThen(initializeHttpServer())
       .subscribe(CompletableHelper.toObserver(done));
+  }
+
+  private Completable initializeUserEventCache() {
+    Single<DataGridClient> single = DataGridClient.create(vertx, new DataGridConfiguration()
+      .setHost("eventstore-dg-hotrod")
+      .setPort(11333));
+    return single.flatMap(client -> client.<String, String>getCache("userevents"))
+      .doOnSuccess(ac -> this.usereventcache = ac)
+      .ignoreElement();
   }
 
   private Completable initializeCache() {
@@ -53,6 +67,7 @@ public class WebVerticle extends AbstractVerticle  {
     router.post("/user").handler(this::addUser);
 
     router.post("/simulators/users").handler(this::toggleUserSimulator);
+    router.delete("/simulators/users").handler(this::clearUsers);
     router.post("/simulators/ride").handler(this::toggleRideSimulator);
 
     return vertx.createHttpServer()
@@ -114,6 +129,11 @@ public class WebVerticle extends AbstractVerticle  {
     getUsers(User.STATE_IN_QUEUE)
       .map(Json::encode)
       .subscribe(res -> rc.response().putHeader(CONTENT_TYPE, JSON_CONTENT_TYPE).end(res));
+  }
+
+  private void clearUsers(RoutingContext rc) {
+    LOGGER.info("Clearing users from cache");
+    cache.clear().andThen(usereventcache.clear()).subscribe(() ->  rc.response().setStatusCode(204).end());
   }
 
   private Single<List<User>> getUsers(String state) {
