@@ -4,7 +4,7 @@ source ${SCRIPT_DIR}/openshift/env.sh
 
 ## Scales down and back up the demo
 
-oc project reactica-demo
+oc project reactive-demo
 
 echo "Scaling application and DG and AMQ down"
 for i in eventstore-dg eventstream-amq billboard current-line-updater event-generator event-store queue-length-calculator ; do
