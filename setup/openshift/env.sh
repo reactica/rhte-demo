@@ -43,9 +43,9 @@ function minishift_start {
 function minishift_login {
    export IP=`minishift ip`
   if [ -z ${2} ]; then
-    oc login https://$IP:8443 -u $1
+    oc login --insecure-skip-tls-verify=true https://$IP:8443 -u $1
   else
-    oc login https://$IP:8443 -u $1 -p $2
+    oc login --insecure-skip-tls-verify=true https://$IP:8443 -u $1 -p $2
   fi
   oc version
 }

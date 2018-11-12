@@ -9,7 +9,7 @@ export OS_PROJECT_NAME="reactive-demo"
 source ${SCRIPT_DIR}/openshift/env.sh
 
 # Start minishift is needed
-minishift_start "v3.9.0"
+minishift_start "v3.11.0"
 
 minishift_login "system:admin"
 
