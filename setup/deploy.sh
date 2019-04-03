@@ -4,9 +4,13 @@ SCRIPT_DIR=$(dirname "$0")
 export MINISHIFT_USERNAME="admin"
 export MINISHIFT_PASSWORD="admin"
 export OS_PROJECT_NAME="reactive-demo"
-
-
+  
 source ${SCRIPT_DIR}/openshift/env.sh
+
+if [ -z "${REGISTRY_USERNAME}" -o -z "${REGISTRY_PASSWORD}" ] ; then
+  warning "Must set REGISTRY_USERNAME and REGISTRY_PASSWORD environment variables to access redhat.registry.io"
+  exit 1
+fi
 
 # Start minishift is needed
 minishift_start "v3.11.0"
@@ -29,7 +33,7 @@ if oc get dc | grep "eventstore-dg"; then
   info "Data grid already deployed"
 else
   info "Instantiating data grid eventstore-dg"
-  oc new-app --template=datagrid72-basic -p APPLICATION_NAME=eventstore-dg -p CACHE_NAMES=userevents,rideevents,users
+  oc new-app --template=datagrid73-basic -p APPLICATION_NAME=eventstore-dg -p CACHE_NAMES=userevents,rideevents,users
 fi
 
 waitForPodState "eventstore-dg" "Running"
@@ -39,7 +43,7 @@ if oc get dc | grep "eventstream"; then
   info "AMQ Broker already deployed"
 else
   info "Instantiating AMQ Broker eventstream"
-  oc new-app --template=amq-broker-71-basic -p APPLICATION_NAME=eventstream -p AMQ_QUEUES=USER_QUEUE,ENTER_EVENT_QUEUE,RIDE_EVENT_QUEUE,QLC_QUEUE,CL_QUEUE -p AMQ_USER=user -p AMQ_PASSWORD=user123 -p AMQ_PROTOCOL=amqp
+  oc new-app --template=amq-broker-72-basic -p APPLICATION_NAME=eventstream -p AMQ_NAME=eventstream -p AMQ_QUEUES=USER_QUEUE,ENTER_EVENT_QUEUE,RIDE_EVENT_QUEUE,QLC_QUEUE,CL_QUEUE -p AMQ_USER=user -p AMQ_PASSWORD=user123 -p AMQ_PROTOCOL=amqp
 fi
 
 waitForPodState "eventstream" "Running"

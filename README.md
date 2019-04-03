@@ -27,7 +27,7 @@ There are several individual microservices and infrastructure components that ma
 
 Prerequisites
 ================
-In order to deploy this demo, you need Minishift installed and the `minishift` CLI available on your `$PATH`.
+In order to deploy this demo, you need [Minishift](https://github.com/minishift/minishift/releases) v1.33.0 or later installed and the `minishift` CLI available on your `$PATH`.
 
 Deploying the Demo
 =============================
