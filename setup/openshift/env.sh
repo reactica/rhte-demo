@@ -29,15 +29,16 @@ function minishift_start {
     minishift config set image-caching true
     minishift addon enable admin-user
     minishift addon enable anyuid
-    minishift addon enable redhat-registry-login
+    minishift addon disable xpaas
 
     info "Starting minishift..."
     if (minishift version | grep -q "CDK"); then
-      minishift start --skip-registration
+      minishift start
     else
+      minishift addon enable redhat-registry-login
       minishift start --openshift-version=$1
+      minishift addon apply redhat-registry-login -a REGISTRY_USERNAME="${REGISTRY_USERNAME}" -a REGISTRY_PASSWORD="${REGISTRY_PASSWORD}"
     fi
-    minishift addon apply redhat-registry-login -a REGISTRY_USERNAME="${REGISTRY_USERNAME}" -a REGISTRY_PASSWORD="${REGISTRY_PASSWORD}"
     info "NOTE: You may need to set the timezone in minishift using 'minishift ssh sudo timedatectl set-timezone [ID]; minishift openshift restart' if your app calculates timestamps"
   fi
 }

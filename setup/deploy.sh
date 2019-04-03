@@ -7,9 +7,13 @@ export OS_PROJECT_NAME="reactive-demo"
   
 source ${SCRIPT_DIR}/openshift/env.sh
 
-if [ -z "${REGISTRY_USERNAME}" -o -z "${REGISTRY_PASSWORD}" ] ; then
-  warning "Must set REGISTRY_USERNAME and REGISTRY_PASSWORD environment variables to access redhat.registry.io"
-  exit 1
+if (minishift version | grep -q "CDK"); then
+  echo "Using CDK Registration"
+else
+  if [ -z "${REGISTRY_USERNAME}" -o -z "${REGISTRY_PASSWORD}" ] ; then
+    warning "Must set REGISTRY_USERNAME and REGISTRY_PASSWORD environment variables to access redhat.registry.io"
+    exit 1
+  fi
 fi
 
 # Start minishift is needed

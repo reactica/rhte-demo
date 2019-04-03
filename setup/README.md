@@ -4,8 +4,10 @@
 
 This demo requires images for Red Hat Data Grid and Red Hat AMQ to be accessible. To do this, supply your credentials using the following:
 
-export REGISTRY_USERNAME='`your-redhat-login`'
-export REGISTRY_PASSWORD='`your-redhat-login-password`'
+```bash
+export REGISTRY_USERNAME='your-redhat-login'
+export REGISTRY_PASSWORD='your-redhat-login-password'
+```
 
 ### Install and setup required services
 
