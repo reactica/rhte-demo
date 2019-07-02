@@ -81,7 +81,7 @@ public class DataGridClientImpl implements DataGridClient {
         });
         future.tryComplete(manager);
       }
-    ).doOnSuccess(rcm -> caches = rcm);
+    ).doOnSuccess(rcm -> caches = rcm).toSingle();
   }
 
   /**
@@ -109,7 +109,7 @@ public class DataGridClientImpl implements DataGridClient {
    */
   private <K, V> Single<AsyncCache<K, V>> retrieveCache(String name) {
     LOGGER.info("Retrieving cache {} using Infinispan", name);
-    return vertx.rxExecuteBlocking(
+    return vertx.<AsyncCache<K, V>>rxExecuteBlocking(
       future -> {
         try {
           RemoteCache<K, V> cache = caches.getCache(name);
@@ -119,7 +119,7 @@ public class DataGridClientImpl implements DataGridClient {
           future.fail(e);
         }
       }
-    );
+    ).toSingle();
   }
 
   @SuppressWarnings("unchecked")

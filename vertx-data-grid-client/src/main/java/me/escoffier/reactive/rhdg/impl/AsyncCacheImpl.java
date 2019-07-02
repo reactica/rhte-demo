@@ -85,7 +85,7 @@ public class AsyncCacheImpl<K, V> implements AsyncCache<K, V> {
           V v = cache.get(k);
           fut.complete(v);
         }
-      ).flatMapMaybe(value -> {
+      ).flatMap(value -> {
         if (value != null) {
           return Maybe.just(value);
         }
@@ -134,10 +134,10 @@ public class AsyncCacheImpl<K, V> implements AsyncCache<K, V> {
 
   @Override
   public Single<Integer> size() {
-    return getContext()
-      .rxExecuteBlocking(
+    return getContext().<Integer>
+      rxExecuteBlocking(
         fut -> fut.complete(cacheSize())
-      );
+      ).toSingle();
   }
 
   private int cacheSize() {
@@ -153,7 +153,7 @@ public class AsyncCacheImpl<K, V> implements AsyncCache<K, V> {
   public Single<Boolean> replace(K key, V oldValue, V newValue) {
     return
       getContext()
-        .rxExecuteBlocking(future -> future.complete(cache.replace(key, oldValue, newValue)));
+        .<Boolean>rxExecuteBlocking(future -> future.complete(cache.replace(key, oldValue, newValue))).toSingle();
   }
 
   @Override
@@ -168,7 +168,8 @@ public class AsyncCacheImpl<K, V> implements AsyncCache<K, V> {
             fut.complete(map);
           }
         )
-        .doOnError(err -> LOGGER.error("Error on all", err));
+        .doOnError(err -> LOGGER.error("Error on all", err))
+        .toSingle();
   }
 
   @Override
