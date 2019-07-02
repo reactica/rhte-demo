@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 SCRIPT_DIR=$(dirname "$0")
 
-#export MINISHIFT_USERNAME="admin"
-#export MINISHIFT_PASSWORD="admin"
+export OPENSHIFT_USERNAME="admin"
+export OPENSHIFT_PASSWORD="admin"
 export OS_PROJECT_NAME="reactive-demo"
-  
+
 source ${SCRIPT_DIR}/openshift/env.sh
 
 if (minishift version | grep -q "CDK"); then
@@ -27,7 +27,7 @@ create_project ${OS_PROJECT_NAME}
 # Give the default service account right to view the project (required for AMQ and DG)
 setSystemAccountRoleToUser ${OS_PROJECT_NAME}
 
-minishift_login ${MINISHIFT_USERNAME} ${MINISHIFT_PASSWORD}
+minishift_login ${OPENSHIFT_USERNAME} ${OPENSHIFT_PASSWORD}
 
 # Install image streams
 source ${SCRIPT_DIR}/openshift/install-is-and-templates.sh
