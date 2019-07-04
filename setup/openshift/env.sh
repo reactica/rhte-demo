@@ -31,12 +31,30 @@ function minishift_start {
     minishift addon enable anyuid
     minishift addon disable xpaas
 
+    local _minishift_params=""
+
+    #If CDK version of minishift set the exact version of openshift to use
+    if ! (minishift version | grep -q "CDK"); then
+
+      #Unless the user has registration environment parameters set skip the registration to avoid prompting for it
+      if ! [ -z "${MINISHIFT_USERNAME}" -o -z "${MINISHIFT_PASSWORD}" ] ; then
+        _minishift_params="--openshift-version=$1 --skip-registration"
+      else
+        _minishift_params="--openshift-version=$1"
+      fi
+    fi
+
+    #If the user has set the registry env parameters enable the redhat-registry-login addon
+    if ! [ -z "${REGISTRY_USERNAME}" -o -z "${REGISTRY_PASSWORD}" ] ; then
+        minishift addon enable redhat-registry-login
+    fi
+
+    #Start minishift
     info "Starting minishift..."
-    if (minishift version | grep -q "CDK"); then
-      minishift start
-    else
-      minishift addon enable redhat-registry-login
-      minishift start --openshift-version=$1
+    minishift start ${_minishift_params}
+
+    #If the user has set the registry env parameters apply the redhat-registry-login addon
+    if ! [ -z "${REGISTRY_USERNAME}" -o -z "${REGISTRY_PASSWORD}" ] ; then
       minishift addon apply redhat-registry-login -a REGISTRY_USERNAME="${REGISTRY_USERNAME}" -a REGISTRY_PASSWORD="${REGISTRY_PASSWORD}"
     fi
     info "NOTE: You may need to set the timezone in minishift using 'minishift ssh sudo timedatectl set-timezone [ID]; minishift openshift restart' if your app calculates timestamps"

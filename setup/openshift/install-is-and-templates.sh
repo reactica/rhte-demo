@@ -6,26 +6,26 @@ JDK_IS='https://raw.githubusercontent.com/jboss-container-images/openjdk/openjdk
 
 info "### INSTALLING IS FOR OPENJDK"
 if $(oc get is/redhat-openjdk18-openshift -n openshift > /dev/null 2>&1); then
-      oc replace -f $JDK_IS -n openshift --as=system:admin
+    curl -sL $JDK_IS | sed "s/registry.redhat.io/registry.access.redhat.com/g" | oc replace -n openshift --as=system:admin -f -
 else
-    oc create -f $JDK_IS -n openshift --as=system:admin
+    curl -sL $JDK_IS | sed "s/registry.redhat.io/registry.access.redhat.com/g" | oc create -n openshift --as=system:admin -f -
 fi
 
 oc -n openshift import-image redhat-openjdk18-openshift:1.5 --as=system:admin > /dev/null && echo "redhat-openjdk18-openshift:1.5 image successfully imported"
 
 info "### INSTALLING IS FOR AMQ AND RDG"
 if $(oc get is/jboss-datagrid73-openshift -n openshift > /dev/null 2>&1); then
-      oc replace -f $DG_IS -n openshift --as=system:admin
+    curl -sL $DG_IS | sed "s/registry.redhat.io/registry.access.redhat.com/g" | oc replace -n openshift --as=system:admin -f -
 else
-    oc create -f $DG_IS -n openshift --as=system:admin
+    curl -sL $DG_IS | sed "s/registry.redhat.io/registry.access.redhat.com/g" | oc create -n openshift --as=system:admin -f -
 fi
 
 oc -n openshift import-image jboss-datagrid73-openshift:1.0 --as=system:admin > /dev/null && echo "jboss-datagrid73-openshift:1.0 image successfully imported"
 
 if $(oc get is/amq-broker-72-openshift -n openshift > /dev/null 2>&1); then
-    oc replace -f $AMQ_IS -n openshift --as=system:admin
+    curl -sL $AMQ_IS | sed "s/registry.redhat.io/registry.access.redhat.com/g" | oc replace -n openshift --as=system:admin -f -
 else
-    oc create -f $AMQ_IS -n openshift --as=system:admin
+    curl -sL $AMQ_IS | sed "s/registry.redhat.io/registry.access.redhat.com/g" | oc create -n openshift --as=system:admin -f -
 fi
 
   oc -n openshift import-image amq-broker-72-openshift:1.3 --as=system:admin > /dev/null && echo "amq-broker-72-openshift:1.3 image successfully imported"
