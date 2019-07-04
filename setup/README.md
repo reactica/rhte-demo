@@ -1,13 +1,5 @@
 ## How to setup the demo
 
-### Set registry.redhat.io credentials
-
-This demo requires images for Red Hat Data Grid and Red Hat AMQ to be accessible. To do this, supply your credentials using the following:
-
-```bash
-export REGISTRY_USERNAME='your-redhat-login'
-export REGISTRY_PASSWORD='your-redhat-login-password'
-```
 
 ### Install and setup required services
 
@@ -27,6 +19,14 @@ It:
 
 The script _should be idempotent_.
 
+### Optionally set the registry.redhat.io credentials
+
+If you are using Minishift CDK and have a valid subscription to Red Hat Network you can optionally specify the your credentials by setting the following environment variables.
+
+```bash
+export REGISTRY_USERNAME='your-redhat-login'
+export REGISTRY_PASSWORD='your-redhat-login-password'
+```
 
 ### Install the application
 
