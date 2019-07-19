@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Coderland: Reactica!</title>
-    <link rel="icon" href="imgs/favicon.ico">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coderland: Reactica!</title>
+  <link rel="icon" href="imgs/favicon.ico">
 
 </head>
 <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css"/>
@@ -12,213 +12,212 @@
 <link href="css/reactica.css" rel="stylesheet">
 <body>
 
-<script src="node_modules/jquery/dist/jquery.min.js"></script>
-<script src="node_modules/popper.js/dist/popper.min.js"></script>
-<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
-<script src="node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="node_modules/moment/moment.js"></script>
-<script src="node_modules/sockjs-client/dist/sockjs.min.js"></script>
-<script src="node_modules/vertx3-eventbus-client/vertx-eventbus.js"></script>
-
-
-<div class="site-wrapper">
-    <div class="site-wrapper-inner">
-        <div class="cover-container container-fluid">
-            <!-- header -->
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="masthead clearfix">
-                        <div class="inner">
-                            <img id="coderland_logo" style="float: right" src="imgs/logo.jpg"/>
-
-                            <h1 class="masthead-brand">Coderland Reactica</h1>
-                            <nav>
-                                <ul class="nav masthead-nav">
-                                    <li class="active"><a href="#">Ride Status</a></li>
-                                    <li><a href="/admin.html">Ride Admin</a></li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- main body -->
-            <div class="inner cover">
-
-                <div class="container-fluid">
-                    <!-- jumbotron wait time -->
-                    <div class="row">
-                        <div class="jumbotron">
-                            <p class="lead">Expected Wait Time</p>
-                            <span id="waittime">N/A</span>
-                        </div>
-                    </div>
-
-                    <!-- enter queue form -->
-                    <div class="queue row justify-content-center">
-                        <div class="col-md-4">
-                            <form class="form-inline">
-                                <div class="form-group row">
-                                    <label class="col-md-2 col-form-label" for="name">Name</label>
-                                    <div class="col-md-8">
-                                      <input type="text" class="form-control" id="name" placeholder="Jane Doe">
-                                    </div>
-                                    <div class="col-md-2">
-                                      <button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-default">Enter</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- queue -->
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div id="table_wrapper" class="table-responsive">
-
-                                <table style="width: 100%;" id="queuetable" class="table table-striped table-bordered table-sm table-condensed">
-                                    <thead class="thead-dark">
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Time in Queue</th>
-                                        <th>State</th>
-                                        <th>Time Left</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td>Dummy</td>
-                                        <td>15 minutes</td>
-                                        <td>IN_QUEUE</td>
-                                        <td>10 minutes</td>
-                                    </tr>
-                                    </tbody>
-
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="node_modules/popper.js/dist/popper.min.js"></script>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
+  <script src="node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+  <script src="node_modules/moment/moment.js"></script>
+  <script src="node_modules/sockjs-client/dist/sockjs.min.js"></script>
+  <script src="node_modules/vertx3-eventbus-client/vertx-eventbus.js"></script>
+  <div class="side-image"></div>
+  <nav class="navbar navbar-expand-lg sticky-top rea-site-header">
+    <a class="navbar-brand ml-sm-2 ml-lg-4" href="#">
+      <img src="imgs/reactica_logo.png" height="30" alt="Reactica logo">
+    </a>
+    <a class="menu-button [ js-menu-button ]" href="#" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler">
+      <div class="menu-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </a>
+    <div class="collapse navbar-collapse" id="navbarToggler">
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" href="/index.html">Ride Status</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/admin.html">Ride Admin</a>
+        </li>
+      </ul>
+      <a href="https://developers.redhat.com/coderland/" class="coderland-image" alt="Link to RHD Coderland page" target="top">
+        <img src="imgs/coderland_logo.svg" height="30" alt="Coderland image" class="mr-sm-2 mr-lg-5">
+      </a>
     </div>
-</div>
-
-<script type="application/javascript">
+  </nav>
+  <div class="d-flex" style="height: calc(100vh - 70px);">
+    <div class="rea-content-wrapper">
+      <!-- main body -->
+      <div class="d-flex flex-column">
+        <div class="d-flex align-items-center py-4 pl-4 rea-ride-wait-time">
+          <span class="pr-4">Estimated wait time:</span>
+          <span id="waittime" class="rea-ride-wait-time__count">N/A</span>
+        </div>
+        <div class="d-flex flex-column flex-md-row py-3 pl-3 align-items-center rea-content-wrapper--border">
+          <div>
+            <form>
+              <div class="form-row align-items-center">
+                <div class="col-auto pr-0 pl-0">
+                  <label class="sr-only" for="inlineFormInput">Name</label>
+                  <input type="text" class="form-control rea-ride-name-input" id="name" placeholder="Add new rider">
+                </div>
+                <div class="col-auto pr-0 pl-0">
+                  <button type="button" onclick="enterRide(document.getElementById('name').value)" class="btn btn-primary-form">Enter</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="py-3 px-4 d-flex justify-content-between">
+          <span class="invisible">
+            <strong>5</strong>&nbsp;riders in queue
+          </span>
+          <span>
+            <form>
+              <input type="text" class="form-control" id="search" placeholder="Search rider queue">
+            </form>
+          </span>
+        </div>
+        <div class="py-3 pl-3">
+          <div class="table-responsive">
+            <table id="queuetable" class="table table-borderless table-hover" style="background-color: #fff;">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Time in Queue</th>
+                  <th scope="col">State</th>
+                  <th scope="col">Time Left</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Dummy</td>
+                  <td>15 minutes</td>
+                  <td>IN_QUEUE</td>
+                  <td>10 minutes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="application/javascript">
 
   const MS_IN_MIN = 60 * 1000;
 
-  let highlightedUsers = [];
+    let highlightedUsers = [];
 
-  // open vertx event bus
-  const eb = new EventBus('/eb/');
-  eb.onopen = function () {
-    eb.registerHandler('queue:state', function (err, payload) {
-      // reset queue data
-      loadQueueData(payload.body);
-    });
-    eb.registerHandler('queue:attributes', function (err, payload) {
-      // udpate wait time
-      let expected_wait_time = new Date().getTime() + payload.body.expected_wait_time;
-      $('#waittime').text(moment(expected_wait_time).toNow(true));
-    });
-  };
+    // open vertx event bus
+    const eb = new EventBus('/eb/');
+    eb.onopen = function () {
+      eb.registerHandler('queue:state', function (err, payload) {
+        // reset queue data
+        loadQueueData(payload.body);
+      });
+      eb.registerHandler('queue:attributes', function (err, payload) {
+        // udpate wait time
+        let expected_wait_time = new Date().getTime() + payload.body.expected_wait_time;
+        $('#waittime').text(moment(expected_wait_time).toNow(true));
+      });
+    };
 
-  function enterRide(name) {
-    if (!name) {
-      alert("You must enter your name!");
-      return;
+    function enterRide(name) {
+      if (!name) {
+        alert("You must enter your name!");
+        return;
+      }
+      console.log("entering ride: " + name);
+      eb.send('queue:enter', {
+        name: name
+      });
+      highlightedUsers.push(name);
+      sessionStorage.setItem('highlightedUsers', JSON.stringify(highlightedUsers));
+      document.getElementById('name').value = '';
     }
-    console.log("entering ride: " + name);
-    eb.send('queue:enter', {
-      name: name
-    });
-    highlightedUsers.push(name);
-    sessionStorage.setItem('highlightedUsers', JSON.stringify(highlightedUsers));
-    document.getElementById('name').value = '';
-  }
 
-  // insert new data into table
-  function loadQueueData(data) {
-    const table = $('#queuetable').DataTable();
-    table.clear().rows.add(data);
-    table.rows().every(function (rowIdx, tableLoop, rowLoop) {
-      switch (this.data().state) {
-        case 'IN_QUEUE':
+    // insert new data into table
+    function loadQueueData(data) {
+      const table = $('#queuetable').DataTable();
+      table.clear().rows.add(data);
+      table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+        switch (this.data().state) {
+          case 'IN_QUEUE':
           $(this.node()).addClass('table-info');
           break;
-        case 'ON_RIDE':
+          case 'ON_RIDE':
           $(this.node()).addClass('table-warning');
           break;
-        case 'COMPLETED_RIDE':
+          case 'COMPLETED_RIDE':
           $(this.node()).addClass('table-success');
           break;
+        }
+      });
+      table.rows().invalidate().order([1, 'desc']).draw();
+
+    }
+
+    // highlight users we added ourselves
+    function renderNameString(name, type, row, meta) {
+      if (highlightedUsers.includes(name)) {
+        return '<strong>' + name + '</strong>';
+      } else {
+        return name;
       }
-    });
-    table.rows().invalidate().order([1, 'desc']).draw();
-
-  }
-
-  // highlight users we added ourselves
-  function renderNameString(name, type, row, meta) {
-    if (highlightedUsers.includes(name)) {
-      return '<strong>' + name + '</strong>';
-    } else {
-      return name;
     }
-  }
 
-  // render human-friendly state string
-  function renderStateString(state, type, row, meta) {
-    switch (state) {
-      case 'IN_QUEUE':
+    // render human-friendly state string
+    function renderStateString(state, type, row, meta) {
+      switch (state) {
+        case 'IN_QUEUE':
         return 'In Queue';
-      case 'ON_RIDE':
+        case 'ON_RIDE':
         return 'On Ride';
-      case 'COMPLETED_RIDE':
+        case 'COMPLETED_RIDE':
         return 'Completed Ride';
-    }
-  }
-
-  // render human-friendly timestamp
-  function renderEtaString(eta, type, row, meta) {
-    if (type === "sort" || type === "type") {
-      return eta;
+      }
     }
 
-    switch (row.state) {
-      case 'IN_QUEUE':
+    // render human-friendly timestamp
+    function renderEtaString(eta, type, row, meta) {
+      if (type === "sort" || type === "type") {
+        return eta;
+      }
+
+      switch (row.state) {
+        case 'IN_QUEUE':
         return moment(eta).fromNow(true);
-      case 'ON_RIDE':
+        case 'ON_RIDE':
         return 'N/A';
-      case 'COMPLETED_RIDE':
+        case 'COMPLETED_RIDE':
         return 'N/A';
-    }
-  }
-
-  $(document).ready(function () {
-
-    // initialize any previously highlighted users
-    let obj = sessionStorage.getItem('highlightedUsers');
-    if (!obj) {
-      highlightedUsers = [];
-    } else {
-      highlightedUsers = JSON.parse(obj);
+      }
     }
 
-    // initialize datatable
-    $('#queuetable').DataTable({
-      language: {
-        search: ""
-      },
-      data: [],
-      lengthChange: false,
-      pageLength: 100,
-      ordering: true,
-      order: [[1, 'desc']],
-      columns: [
+    $(document).ready(function () {
+
+      // initialize any previously highlighted users
+      let obj = sessionStorage.getItem('highlightedUsers');
+      if (!obj) {
+        highlightedUsers = [];
+      } else {
+        highlightedUsers = JSON.parse(obj);
+      }
+
+      // initialize datatable
+      $('#queuetable').DataTable({
+        language: {
+          search: ""
+        },
+        data: [],
+        lengthChange: false,
+        pageLength: 100,
+        ordering: true,
+        order: [[1, 'desc']],
+        columns: [
         {
           data: 'name',
           render: renderNameString
@@ -246,30 +245,30 @@
           data: 'eta',
           render: renderEtaString
         }
-      ],
+        ],
 
+      });
+
+      $('form').on('submit', function(event){
+        event.preventDefault();
+      });
+
+      $('#name').keypress(function(e) {
+        // Enter pressed?
+        if(e.which === 10 || e.which === 13) {
+          enterRide(this.value);
+        }
+      });
+
+      $('#queuetable_filter > label > input').attr('placeholder', 'Search...');
+      // make initial call to fetch all queue data and load it
+      $.ajax({
+        url: "/api/queue/in-queue"
+      }).done(function (data) {
+        loadQueueData(data);
+      });
     });
 
-    $('form').on('submit', function(event){
-      event.preventDefault();
-    });
-
-    $('#name').keypress(function(e) {
-      // Enter pressed?
-      if(e.which === 10 || e.which === 13) {
-        enterRide(this.value);
-      }
-    });
-
-    $('#queuetable_filter > label > input').attr('placeholder', 'Search...');
-    // make initial call to fetch all queue data and load it
-    $.ajax({
-      url: "/api/queue/in-queue"
-    }).done(function (data) {
-      loadQueueData(data);
-    });
-  });
-
-</script>
+  </script>
 </body>
 </html>
