@@ -1,100 +1,270 @@
-/*
- * Globals
- */
-
-body {
-  background: url('../imgs/background.jpg') no-repeat center center fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  background-size: cover;
-  -o-background-size: cover;
+:root {
+  --rea-m-color--white: #fff;
+  --rea-m-color--light: #ddd;
+  --rea-m-color--dark: #151515;
+  --rea-m-color--darker: #000;
+  --rea-m-color--blue: #0066cc;
+  --rea-m-color--red: #cc0000;
 }
 
-/* logo */
-#coderland_logo {
-  width: 300px;
+@font-face {
+  font-family: "RedHatText";
+  font-style: normal;
+  font-weight: 400;
+  src: url("../fonts/redhat-text/RedHatText-Regular.eot");
+  src: url("../fonts/redhat-text/RedHatText-Regular.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-text/RedHatText-Regular.woff2") format("woff2"), url("../fonts/redhat-text/RedHatText-Regular.woff") format("woff"), url("../fonts/redhat-text/RedHatText-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatText";
+  font-style: italic;
+  font-weight: 400;
+  src: url("../fonts/redhat-text/RedHatText-RegularItalic.eot");
+  src: url("../fonts/redhat-text/RedHatText-RegularItalic.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-text/RedHatText-RegularItalic.woff2") format("woff2"), url("../fonts/redhat-text/RedHatText-RegularItalic.woff") format("woff"), url("../fonts/redhat-text/RedHatText-RegularItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatText";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../fonts/redhat-text/RedHatText-Medium.eot");
+  src: url("../fonts/redhat-text/RedHatText-Medium.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-text/RedHatText-Medium.woff2") format("woff2"), url("../fonts/redhat-text/RedHatText-Medium.woff") format("woff"), url("../fonts/redhat-text/RedHatText-Medium.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatText";
+  font-style: italic;
+  font-weight: 700;
+  src: url("../fonts/redhat-text/RedHatText-MediumItalic.eot");
+  src: url("../fonts/redhat-text/RedHatText-MediumItalic.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-text/RedHatText-MediumItalic.woff2") format("woff2"), url("../fonts/redhat-text/RedHatText-MediumItalic.woff") format("woff"), url("../fonts/redhat-text/RedHatText-MediumItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatDisplay";
+  font-style: normal;
+  font-weight: 300;
+  src: url("../fonts/redhat-display/RedHatDisplay-Regular.eot");
+  src: url("../fonts/redhat-display/RedHatDisplay-Regular.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-display/RedHatDisplay-Regular.woff2") format("woff2"), url("../fonts/redhat-display/RedHatDisplay-Regular.woff") format("woff"), url("../fonts/redhat-display/RedHatDisplay-Regular.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatDisplay";
+  font-style: italic;
+  font-weight: 300;
+  src: url("../fonts/redhat-display/RedHatDisplay-RegularItalic.eot");
+  src: url("../fonts/redhat-display/RedHatDisplay-RegularItalic.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-display/RedHatDisplay-RegularItalic.woff2") format("woff2"), url("../fonts/redhat-display/RedHatDisplay-RegularItalic.woff") format("woff"), url("../fonts/redhat-display/RedHatDisplay-RegularItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatDisplay";
+  font-style: normal;
+  font-weight: 400;
+  src: url("../fonts/redhat-display/RedHatDisplay-Medium.eot");
+  src: url("../fonts/redhat-display/RedHatDisplay-Medium.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-display/RedHatDisplay-Medium.woff2") format("woff2"), url("../fonts/redhat-display/RedHatDisplay-Medium.woff") format("woff"), url("../fonts/redhat-display/RedHatDisplay-Medium.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatDisplay";
+  font-style: italic;
+  font-weight: 400;
+  src: url("../fonts/redhat-display/RedHatDisplay-MediumItalic.eot");
+  src: url("../fonts/redhat-display/RedHatDisplay-MediumItalic.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-display/RedHatDisplay-MediumItalic.woff2") format("woff2"), url("../fonts/redhat-display/RedHatDisplay-MediumItalic.woff") format("woff"), url("../fonts/redhat-display/RedHatDisplay-MediumItalic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatDisplay";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../fonts/redhat-display/RedHatDisplay-Bold.eot");
+  src: url("../fonts/redhat-display/RedHatDisplay-Bold.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-display/RedHatDisplay-Bold.woff2") format("woff2"), url("../fonts/redhat-display/RedHatDisplay-Bold.woff") format("woff"), url("../fonts/redhat-display/RedHatDisplay-Bold.ttf") format("truetype");
+}
+@font-face {
+  font-family: "RedHatDisplay";
+  font-style: italic;
+  font-weight: 700;
+  src: url("../fonts/redhat-display/RedHatDisplay-BoldItalic.eot");
+  src: url("../fonts/redhat-display/RedHatDisplay-BoldItalic.eot?#iefix") format("embedded-opentype"), url("../fonts/redhat-display/RedHatDisplay-BoldItalic.woff2") format("woff2"), url("../fonts/redhat-display/RedHatDisplay-BoldItalic.woff") format("woff"), url("../fonts/redhat-display/RedHatDisplay-BoldItalic.ttf") format("truetype");
 }
 
-/* Links */
-a,
-a:focus,
-a:hover {
-  color: #fff;
+html, body {
+  font-family: "RedHatText";
 }
 
-/* Custom default button */
-.btn-default,
-.btn-default:hover,
-.btn-default:focus {
-  color: white;
-  text-shadow: none; /* Prevent inheritance from `body` */
-  background-color: #5cb85c;
-  font-size: 21px;
-  border: 1px solid #444444;
+h1, h2, h3, h4, h5, h6 {
+  font-family: "RedHatDisplay";
 }
 
-#waittime {
-  font-size: 60px;
-  line-height: 1.1;
-  display: block;
-  color: #5cb85c;
-  margin-bottom: 10px;
-}
-
-#queuetable_filter > label {
-  float: right;
-  padding-bottom: 10px;
-}
-
-#queuetable_paginate > ul {
-  float: right;
-}
-
-#table_wrapper {
-  overflow-x: hidden;
-}
-
-table {
-  background-color: darkgray !important;
-  color: black;
-}
-
-table th {
-  text-align: center;
+p, button, input {
+  font-family: "RedHatText";
 }
 
 /*
  * Base structure
  */
 
-html,
-body {
-  height: 100%;
-  background-color: #333;
+.display-none {
+  display: none;
 }
 
-body {
-  color: #fff;
+.btn-primary {
+  border: 1px solid var(--rea-m-color--blue);
+  border-radius: 3px;
+  color: var(--rea-m-color--white);
+  background-color: var(--rea-m-color--blue);
+  padding: .375rem 2rem;
+}
+.btn-primary:hover {
+  color: var(--rea-m-color--blue);
+  background-color: darken(var(--rea-m-color--blue), 15%);
+}
+.btn-primary-form {
+  border: 1px solid var(--rea-m-color--blue);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  color: var(--rea-m-color--blue);
+  background-color: transparent;
+  padding: .375rem 2rem;
+}
+.btn-primary-form:hover {
+  box-shadow: inset 0 0 0 1px var(--rea-m-color--blue);
+  color: var(--rea-m-color--blue);
+  background-color: transparent;
+}
+
+.btn-danger {
+  border: 1px solid var(--rea-m-color--red);
+  border-radius: 3px;
+  color: var(--rea-m-color--white);
+  background-color: var(--rea-m-color--red);
+  padding: .375rem 2rem;
+}
+.btn-danger:hover {
+  color: var(--rea-m-color--red);
+  background-color: var(--rea-m-color--white);
+}
+.btn-danger-form {
+  border: 1px solid var(--rea-m-color--red);
+  border-radius: 3px;
+  color: var(--rea-m-color--red);
+  background-color: transparent;
+  padding: .375rem 2rem;
+}
+.btn-danger-form:hover {
+  box-shadow: inset 0 0 0 1px var(--rea-m-color--red);
+  color: var(--rea-m-color--red);
+  background-color: transparent;
+}
+
+.rea-ride-name-input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.side-image {
+  background-image: url('../imgs/reactica_poster.png');
+  background-repeat: no-repeat;
+  background-position: right;
+  background-size: cover;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: -1;
+}
+
+.rea-site-header {
+  list-style: none;
+  padding: 5px 0 3px;
+  height: 70px;
+  background-color: var(--rea-m-color--white);
+  border-bottom: 1px solid var(--rea-m-color--darker);
   text-align: center;
+  font-size: 1.25rem;
 }
-
-/* Extra markup and styles for table-esque vertical and horizontal centering */
-.site-wrapper {
-  display: table;
+.rea-site-header li {
+  display: inline-flex;
+  color: var(--rea-m-color--dark);
+}
+.rea-site-header a.navbar-brand::after {
+  background-color: transparent;
+}
+.rea-site-header a.coderland-image::after {
+  background-color: transparent;
+}
+.rea-site-header a {
+  position: relative;
+  padding: 5px 0 3px;
+  margin: 0 10px;
+  color: var(--rea-m-color--dark);
+  text-decoration: none;
+}
+.rea-site-header a::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: 50% 50%;
   width: 100%;
-  -webkit-box-shadow: inset 0 0 100px rgba(0, 0, 0, .5);
-  box-shadow: inset 0 0 100px rgba(0, 0, 0, .5);
+  height: 3px;
+  background-color: rgba(193, 3, 3, 0.8);
+  transition: transform 250ms;
+}
+.rea-site-header a:hover {
+  color: var(--rea-m-color--dark);
+}
+.rea-site-header a.active::after {
+  left: 30%;
+  width: 50%;
+  border-bottom: 3px solid;
+  border-bottom-color: rgba(193, 3, 3, 0.8);
+  transform: translateX(-50%) scaleX(1);
+}
+.rea-site-header a.active:hover::after {
+  left: 30%;
+  width: 50%;
+  border-bottom: 3px solid;
+  border-bottom-color: rgba(130, 0, 0, .8);
+}
+.rea-site-header a:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
+.rea-site-header a.menu-button:hover {
+  &::after {
+    display: none;
+    height: 0;
+  }
 }
 
-.site-wrapper-inner {
-  display: table-cell;
-  vertical-align: top;
-  padding-top: 20px;
+.rea-content-wrapper {
+  border-right: 2px solid var(--rea-m-color--light);
+  background-color: var(--rea-m-color--white);
 }
 
-.cover-container {
-  margin-right: auto;
-  margin-left: auto;
+@media (max-width: 768px) {
+  .rea-content-wrapper {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 992px) {
+  .rea-content-wrapper {
+    width: 66%;
+  }
+}
+
+@media (min-width: 992px) {
+  .rea-content-wrapper {
+    width: 75%;
+  }
+}
+
+.rea-content-wrapper--border {
+  background-color: var(--rea-m-color--light);
+}
+
+.rea-ride-wait-time {
+  background-color: var(--rea-m-color--blue);
+  color: var(--rea-m-color--white);
+}
+.rea-ride-wait-time__count {
+  font-size: 30px;
+  font-weight: 700;
 }
 
 /* Padding for spacing */
@@ -127,7 +297,6 @@ body {
   padding-left: 0;
   font-size: 16px;
   font-weight: bold;
-  color: #fff; /* IE8 proofing */
   color: rgba(255, 255, 255, .75);
   border-bottom: 2px solid transparent;
 }
@@ -142,16 +311,12 @@ body {
 .masthead-nav > .active > a,
 .masthead-nav > .active > a:hover,
 .masthead-nav > .active > a:focus {
-  color: #fff;
-  border-bottom-color: #fff;
+  color: var(--rea-m-color--white);
+  border-bottom-color: var(--rea-m-color--white);
 }
 
 .avg-label {
   float: right;
-}
-
-.queue {
-  padding-bottom: 15px;
 }
 
 /*

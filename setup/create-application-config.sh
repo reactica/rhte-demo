@@ -2,5 +2,6 @@
 SCRIPT_DIR=$(dirname "$0")
 
 
-echo "Creating reactive-config config map"
+echo "Creating reactiva-config config map"
+eval $(minishift oc-env)
 oc create configmap reactica-config --from-file=${SCRIPT_DIR}/application.yaml

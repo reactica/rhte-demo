@@ -63,7 +63,8 @@ function minishift_start {
 
 
 function minishift_login {
-   export IP=`minishift ip`
+    export IP=`minishift ip`
+    eval $(minishift oc-env)
   if [ -z ${2} ]; then
     oc login --insecure-skip-tls-verify=true https://$IP:8443 -u $1
   else
@@ -73,7 +74,8 @@ function minishift_login {
 }
 
 function create_project {
-  OS_PROJECT_NAME=$1
+    OS_PROJECT_NAME=$1
+    eval $(minishift oc-env)
   if oc new-project "${OS_PROJECT_NAME}"; then
     info "Project ${OS_PROJECT_NAME} created"
   else
@@ -84,7 +86,8 @@ function create_project {
 }
 
 function deploy_descriptor {
-  info "Deploying $1"
+    info "Deploying $1"
+    eval $(minishift oc-env)
   oc apply -f $1
 }
 
@@ -125,15 +128,18 @@ function waitForPodReadiness {
 }
 
 function getPodState {
+    eval $(minishift oc-env)
   local res=`oc get pods | grep $1 | grep -v "deploy" |  grep -v "build" | awk '{ print $3 }'`
   echo ${res}
 }
 
 function getPodReadinessState {
+    eval $(minishift oc-env)
   local res=`oc get pods | grep $1 | grep -v "deploy" |  grep -v "build"  | awk '{ print $2 }'`
   echo ${res}
 }
 
 function setSystemAccountRoleToUser {
+    eval $(minishift oc-env)
     oc policy add-role-to-user view system:serviceaccount:$1:default -n $1
 }

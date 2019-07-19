@@ -5,68 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin: Coderland: Reactica!</title>
   <link rel="icon" href="imgs/favicon.ico">
-
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css"/>
+  <link href="css/reactica.css" rel="stylesheet">
 </head>
-<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css"/>
-<link href="css/reactica.css" rel="stylesheet">
-
-
 <body>
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="node_modules/moment/moment.js"></script>
+  <script src="node_modules/sockjs-client/dist/sockjs.min.js"></script>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="node_modules/vertx3-eventbus-client/vertx-eventbus.js"></script>
 
-<script src="node_modules/jquery/dist/jquery.min.js"></script>
-<script src="node_modules/moment/moment.js"></script>
-<script src="node_modules/sockjs-client/dist/sockjs.min.js"></script>
-<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="node_modules/vertx3-eventbus-client/vertx-eventbus.js"></script>
-
-
-<div class="site-wrapper">
-  <div class="site-wrapper-inner">
-    <div class="cover-container container-fluid">
-      <!-- header -->
-      <div class="row">
-        <div class="col-md-12">
-          <div class="masthead clearfix">
-            <div class="inner">
-              <img id="coderland_logo" style="float: right" src="imgs/logo.jpg"/>
-
-              <h1 class="masthead-brand">Coderland Reactica</h1>
-              <nav>
-                <ul class="nav masthead-nav">
-                  <li><a href="/">Ride Status</a></li>
-                  <li class="active"><a href="/admin.html">Ride Admin</a></li>
-                </ul>
-              </nav>
-            </div>
-          </div>
-        </div>
+  <div class="side-image"></div>
+  <nav class="navbar navbar-expand-lg sticky-top rea-site-header">
+    <a class="navbar-brand ml-sm-2 ml-lg-4" href="#">
+      <img src="imgs/reactica_logo.png" height="30" alt="Reactica logo">
+    </a>
+    <a class="menu-button [ js-menu-button ]" href="#" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler">
+      <div class="menu-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
+    </a>
+    <div class="collapse navbar-collapse" id="navbarToggler">
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="/index.html">Ride Status</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/admin.html">Ride Admin</a>
+        </li>
+      </ul>
+      <a href="https://developers.redhat.com/coderland/serverless/" class="coderland-image" alt="Link to RHD Coderland page" target="top">
+        <img src="imgs/coderland_logo.svg" height="30" alt="Coderland image" class="mr-sm-2 mr-lg-5">
+      </a>
+    </div>
+  </nav>
 
+  <div class="d-flex" style="height: calc(100vh - 70px);">
+    <div class="rea-content-wrapper">
       <!-- main body -->
-      <div class="inner cover">
-        <div class="row">
-
-          <div class="col-md-2"></div>
-          <div class="col-md-8">
-            <div class="form-horizontal" style="background-color: rgba(0,0,0,.5)">
-              <div class="form-group">
-                <div style="padding: 20px;" class="col-sm-12">
-                  <button onclick="sendControlMsg('start-ride-simulator')" type="button" class="btn btn-lg btn-success">Start Ride</button>
-                  <button onclick="sendControlMsg('stop-ride-simulator')" type="button" class="btn btn-lg btn-danger">Stop Ride</button>
-                  <button onclick="sendControlMsg('start-user-simulator')" type="button" class="btn btn-lg btn-success">Start User Generation</button>
-                  <button onclick="sendControlMsg('stop-user-simulator')" type="button" class="btn btn-lg btn-danger">Stop User Generation</button>
-                  <button onclick="sendControlMsg('clear-users')" type="button" class="btn btn-lg btn-danger">Flush Queue</button>
-                </div>
-              </div>
+      <div class="d-flex flex-column">
+        <div class="d-flex align-items-center py-4 pl-4 rea-ride-wait-time">
+          <span class="pr-4">Ride status:</span>
+          <span id="waittime" class="rea-ride-wait-time__count rea-ride-in-progress">Ride in progress</span>
+          <span id="waittime2" class="rea-ride-wait-time__count rea-ride-stopped display-none">Ride stopped</span>
+        </div>
+        <div class="d-flex flex-column flex-md-row py-3 pl-4 align-items-center rea-content-wrapper--border">
+          <span class="pr-4">Ride action:</span>
+          <span>
+            <button onclick="sendControlMsg('start-ride-simulator'); changeText('Ride in progress')" type="button" class="btn btn-primary-form mr-3 display-none">Start Ride</button>
+          </span>
+          <span>
+            <button onclick="sendControlMsg('stop-ride-simulator'); changeText('Ride stopped')" type="button" class="btn btn-danger-form">Stop Ride</button>
+          </span>
+        </div>
+        <div class="pt-4 pl-4">
+          Additional admin actions
+        </div>
+        <div class="d-flex flex-row">
+          <div class="d-flex flex-column py-3 pl-3">
+            <div class="p-2">
+              <button onclick="sendControlMsg('start-user-simulator')" type="button" class="btn btn-primary">Start User Generation</button>
             </div>
-
+            <div class="p-2">
+              <button onclick="sendControlMsg('stop-user-simulator')" type="button" class="btn btn-danger">Stop User Generation</button>
+            </div>
           </div>
-          <div class="col-md-2"></div>
+          <div class="d-flex flex-column py-3 pl-3">
+            <div class="p-2">
+              <button onclick="sendControlMsg('clear-users')" type="button" class="btn btn-primary">Flush Queue</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
 <script type="application/javascript">
 
@@ -78,6 +93,10 @@
       cmd: command,
       params: params
     });
+  }
+
+  function changeText(newText) {
+    document.getElementById("waittime").innerHTML = newText;
   }
 
 </script>
