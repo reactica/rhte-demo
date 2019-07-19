@@ -53,25 +53,25 @@ of reactive Vert.x microservices that work together.
 
 :page_facing_up: [Reactica roller coaster overview](https://developers.redhat.com/coderland/reactive/)
 
-:clapper: [VIDEO: An overview of the Reactica roller coaster](https://youtu.be/)
+:clapper: [VIDEO: An overview of the Reactica roller coaster](https://youtu.be/FgqbSNdR2AQ)
 
 ## Part 1: An introduction to reactive programming and Vert.x 
 
-:page_facing_up: [ARTICLE: Part 1: An introduction to reactive programming and Vert.x](https://developers.redhat.com/coderland/reactive/reactive-intro)
+:page_facing_up: [ARTICLE: An introduction to reactive programming and Vert.x](https://developers.redhat.com/coderland/reactive/reactive-intro)
 
-:clapper: [VIDEO: Part 1: An introduction to reactive programming and Vert.x](https://youtu.be/)
+:clapper: [VIDEO: Reactive programming and Vert.x](https://youtu.be/o-cBfanMJ8A)
 
 ## Part 2: Building a reactive system
 
-:page_facing_up: [ARTICLE: Part 2: Building a reactive system](https://developers.redhat.com/coderland/reactive/building-a-reactive-system/)
+:page_facing_up: [ARTICLE: Building a reactive system](https://developers.redhat.com/coderland/reactive/building-a-reactive-system/)
 
-:clapper: [VIDEO: Part 2: Building a reactive system](https://youtu.be/)
+:clapper: [VIDEO: Reactica architecture](https://youtu.be/ajlY_qiIunA)
 
 ## Part 3: A reactive system in action
 
-:page_facing_up: [ARTICLE: Part 3: A reactive system in action](https://developers.redhat.com/coderland/reactive/reactive-system-in-action/)
+:page_facing_up: [ARTICLE: A reactive system in action](https://developers.redhat.com/coderland/reactive/reactive-system-in-action/)
 
-:clapper: [VIDEO: Part 3: A reactive system in action](https://youtu.be/)
+:clapper: [VIDEO: Deploying Reactica](https://youtu.be/6EivZoILNFg)
 
 ## Other useful links
 
