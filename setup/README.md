@@ -1,4 +1,4 @@
-![Coderland logo](setup/images/Coderland_logo.png)
+![Coderland logo](images/Coderland_logo.png)
 
 # `Reactica`
 
