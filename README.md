@@ -12,7 +12,7 @@ The name of the ride is _Reactica_, a thrilling roller coaster ride through anot
 The demo showcases the new Red Hat Application Runtimes (Red Hat [OpenShift Container Platform](https://openshift.com) with [Red Hat Application Services](https://developers.redhat.com/products/rhoar))
 in the context of reactive systems development, showing how components work together to form truly distributed/reactive systems
 (not just reactive programming). It utilizes several components from Red Hat,
-including [Eclipse Vert.x](https://vertx.io), [Red Hat Data Grid](https://www.redhat.com/en/technologies/jboss-middleware/data-grid), and [Red Hat AMQ](https://www.redhat.com/en/technologies/jboss-middleware/amq).
+including [Eclipse Vert.x](https://vertx.io), [Red Hat Data Grid](https://developers.redhat.com/products/datagrid/overview), and [Red Hat AMQ](https://developers.redhat.com/products/amq/overview).
 
 ## Architecture
 --------
@@ -23,7 +23,7 @@ The architecture of the Reactica system looks like this:
 There are several individual microservices and infrastructure components that make up this app:
 
 1. Billboard UI - A frontend based on [JQuery](https://jquery.com) using a [Vert.x](https://vertx.io) based runtime
-2. Event Generator (Users and Rides in the diagram) - This service generates different events such as: users entering the queue, users getting on the ride etc, these events are sent out as [AMQ messages](https://www.redhat.com/en/technologies/jboss-middleware/amq) using [Vert.x](https://vertx.io) as its runtime
+2. Event Generator (Users and Rides in the diagram) - This service generates different events such as: users entering the queue, users getting on the ride etc, these events are sent out as [AMQ messages](https://developers.redhat.com/products/amq/overview) using [Vert.x](https://vertx.io) as its runtime
 3. Event Store - This service retrieves events from AMQ and stores them to the [Data Grid](https://www.redhat.com/en/technologies/jboss-middleware/data-grid).
 4. Current Line Updater - This service registers a [continuous query with Red Hat Data Grid](https://access.redhat.com/documentation/en-us/red_hat_jboss_data_grid/7.1/html/developer_guide/querying#continuous_queries) that triggers for events that are related to the line for the ride. When the line is updated, this service sends an updated version of the current line to the billboard service via AMQ.
 5. Queue Length Estimate - This service calculates the approximate waiting time for a person entering the line at this point based on the number of persons in line and how many people the ride can carry. This service triggers every 10 seconds and sends an updated wait time to the billboard.
@@ -51,7 +51,7 @@ of reactive Vert.x microservices that work together.
 
 :gift: REPO: The Reactica roller coaster source code (this page)
 
-:page_facing_up: [Reactica roller coaster overview](https://developers.redhat.com/coderland/reactive/)
+:page_facing_up: [Reactica: reactive programming and Vert.x tutorial](https://developers.redhat.com/coderland/reactive/)
 
 :clapper: [VIDEO: An overview of the Reactica roller coaster](https://youtu.be/FgqbSNdR2AQ)
 
