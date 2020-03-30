@@ -76,7 +76,7 @@ When the `deploy-application.sh` script is done, you should see something like t
 ✔️  Pod billboard is ready
 ```
 
-Now it's time to actually work with the coaster. You'll need the URL of the web UI; that means finding the Kubernetes route to the `event-generator` pod. `oc get routes` does the trick: 
+Now it's time to actually work with the coaster. You'll need the URL of the web UI; that means finding the Kubernetes route to the `billboard` pod. `oc get routes` does the trick: 
 
 ```bash
 $ oc get routes
