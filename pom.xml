@@ -45,7 +45,7 @@
 
     <!-- dependency versions -->
     <vertx.version>3.7.1.redhat-00012</vertx.version>
-    <log4j2.version>2.13.3</log4j2.version>
+    <log4j2.version>2.17.0</log4j2.version>
     <rxjava.version>2.2.0</rxjava.version>
     <ispn.version>9.2.0.Final</ispn.version>
   </properties>
