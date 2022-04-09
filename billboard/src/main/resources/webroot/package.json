@@ -12,7 +12,7 @@
     "datatables.net": "1.10.22",
     "datatables.net-bs4": "1.10.19",
     "jquery": "3.5.0",
-    "moment": "2.22.2",
+    "moment": "2.29.2",
     "popper.js": "^1.14.4",
     "sockjs-client": "1.1.5",
     "vertx3-eventbus-client": "3.4.2"
